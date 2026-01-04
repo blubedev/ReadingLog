@@ -1,0 +1,73 @@
+# 依存関係
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# 環境変数
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+.env*.local
+
+# ビルド出力
+dist/
+build/
+.vercel/
+.output/
+.nuxt/
+.vite/
+
+# ログ
+logs/
+*.log
+
+# ランタイムデータ
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# カバレッジ
+coverage/
+*.lcov
+.nyc_output/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 一時ファイル
+*.tmp
+*.temp
+.cache/
+
+# テスト
+.coverage/
+.pytest_cache/
+__pycache__/
+
+# MongoDB
+*.db
+*.sqlite
+
+# その他
+.vercel
+.turbo
+
+
