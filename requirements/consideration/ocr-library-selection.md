@@ -92,67 +92,21 @@ const pageNumber = detections[0]?.description.match(/\d+/)?.[0];
 
 ---
 
-### 2.3 AWS Textract
-
-#### 概要
-- **公式サイト**: https://aws.amazon.com/textract/
-- **ドキュメント**: https://docs.aws.amazon.com/textract/
-
-#### 特徴
-- ✅ **高精度なOCR**（AWSの機械学習モデルを使用）
-- ✅ **AWS環境との統合が容易**（既にAWSを使用している場合）
-- ✅ **RESTful API**（サーバー側で処理）
-- ✅ **多言語対応**
-- ⚠️ **AWSアカウントが必要**
-- ⚠️ **有料**（従量課金）
-- ⚠️ **インターネット接続必須**
-- ⚠️ **プライバシー懸念**（画像がAWSのサーバーに送信される）
-- ⚠️ **レート制限あり**
-
-#### 実装例
-```javascript
-// サーバー側で実装
-const AWS = require('aws-sdk');
-const textract = new AWS.Textract();
-
-const params = {
-  Document: { Bytes: imageBuffer }
-};
-
-const result = await textract.DetectDocumentText(params).promise();
-const pageNumber = result.Blocks
-  .filter(block => block.BlockType === 'WORD')
-  .map(block => block.Text)
-  .join(' ')
-  .match(/\d+/)?.[0];
-```
-
-#### コスト
-- **無料枠**: なし
-- **従量課金**: 1,000ページあたり $1.50（テキスト検出）
-- **月間10,000リクエスト**: 約$15/月
-
-#### 利用制限
-- リクエスト数による制限
-- 1リクエストあたりの画像サイズ制限（500MB）
-
----
-
 ## 3. 比較表
 
-| 項目 | Tesseract.js | Google Cloud Vision API | AWS Textract |
-|------|-------------|------------------------|--------------|
-| **実行場所** | クライアント側（ブラウザ） | サーバー側 | サーバー側 |
-| **コスト** | 無料 | 有料（従量課金） | 有料（従量課金） |
-| **認識精度** | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
-| **処理速度** | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
-| **オフライン対応** | ✅ | ❌ | ❌ |
-| **プライバシー** | ✅（画像が外部に送信されない） | ⚠️（Googleサーバーに送信） | ⚠️（AWSサーバーに送信） |
-| **セットアップ** | 簡単（npm installのみ） | 中程度（APIキー設定） | 中程度（AWS認証設定） |
-| **インターネット接続** | 不要（初回のみモデルダウンロード） | 必須 | 必須 |
-| **APIキー** | 不要 | 必要 | 必要（AWS認証） |
-| **レート制限** | なし | あり | あり |
-| **Vue.js統合** | ✅ 容易 | ⚠️ サーバー側実装が必要 | ⚠️ サーバー側実装が必要 |
+| 項目 | Tesseract.js | Google Cloud Vision API |
+|------|-------------|------------------------|
+| **実行場所** | クライアント側（ブラウザ） | サーバー側 |
+| **コスト** | 無料 | 有料（従量課金） |
+| **認識精度** | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| **処理速度** | ⭐⭐⭐ | ⭐⭐⭐⭐ |
+| **オフライン対応** | ✅ | ❌ |
+| **プライバシー** | ✅（画像が外部に送信されない） | ⚠️（Googleサーバーに送信） |
+| **セットアップ** | 簡単（npm installのみ） | 中程度（APIキー設定） |
+| **インターネット接続** | 不要（初回のみモデルダウンロード） | 必須 |
+| **APIキー** | 不要 | 必要 |
+| **レート制限** | なし | あり |
+| **Vue.js統合** | ✅ 容易 | ⚠️ サーバー側実装が必要 |
 
 ---
 
@@ -398,7 +352,6 @@ npm install tesseract.js
 
 **補完として検討すべき場合：**
 - より高精度な認識が必要になった場合: Google Cloud Vision API
-- 既にAWS環境を構築している場合: AWS Textract
 
 ---
 
@@ -407,6 +360,5 @@ npm install tesseract.js
 - [Tesseract.js公式ドキュメント](https://tesseract.projectnaptha.com/)
 - [Tesseract.js GitHub](https://github.com/naptha/tesseract.js)
 - [Google Cloud Vision API](https://cloud.google.com/vision)
-- [AWS Textract](https://aws.amazon.com/textract/)
 
 

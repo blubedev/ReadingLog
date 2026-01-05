@@ -44,7 +44,6 @@ git add .
 
 - `.gitignore`（新規作成）
 - `auth-comparison.md`
-- `aws-infrastructure-setup.md`
 - `book-api-selection.md`
 - `index.js`
 - `memo.md`
@@ -135,7 +134,6 @@ ReadTracker/
 ├── auth-comparison.md       # 認証方式の比較
 ├── book-api-selection.md    # 書籍情報取得API選定
 ├── ocr-library-selection.md # OCRライブラリ選定
-├── aws-infrastructure-setup.md # AWS構築手順（参考）
 ├── vercel-deployment-guide.md  # Vercelデプロイ手順
 ├── package.json             # Node.jsパッケージ設定
 ├── package-lock.json         # 依存関係ロックファイル

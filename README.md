@@ -2,6 +2,13 @@
 
 読書の進捗を管理し、読書記録を効率的に保存・閲覧できるWebアプリケーションです。
 
+## 開発経緯
+以前、私自身図書館に通って勉強する習慣があったが、
+本を開館時間内や貸出期限内に読み切れず、次に借りたときに前回の進捗が不明になってしまうことで
+モチベーションの低下を招いて結果的に図書館から足が遠のいてしまっていた。
+そこで、読書進捗を手軽に管理できるアプリケーションを作成することで、
+自身の図書館通いの習慣定着と、図書館に通う習慣がない人へ機会を提供することを目的として開発を始めた。
+
 ## プロジェクト概要
 
 - **目的**: 読書の進捗を管理し、読書記録を効率的に保存・閲覧できるWebアプリケーション
@@ -40,29 +47,7 @@
 - [CI/CDツール選定](./requirements/consideration/cicd-tool-selection.md)
 - [結合テストツール選定](./requirements/consideration/integration-test-tool-selection.md)
 - [Vercelデプロイ手順](./requirements/consideration/vercel-deployment-guide.md)
-- [AWSインフラ構築手順](./requirements/consideration/aws-infrastructure-setup.md)（参考）
-
-## 開発環境のセットアップ
-
-### 前提条件
-
-- Node.js 18以上
-- npm または yarn
-
-### インストール
-
-```bash
-npm install
-```
-
-### 開発サーバーの起動
-
-```bash
-npm run dev
-```
 
 ## ライセンス
 
 ISC
-
-

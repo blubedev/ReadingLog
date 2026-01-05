@@ -711,7 +711,7 @@ export default {
 - リンクから新しいパスワードを設定
 
 #### 4.1.3 必要な技術
-- メール送信サービス（SendGrid、AWS SES、Nodemailerなど）
+- メール送信サービス（SendGrid、Nodemailerなど）
 - リセットトークンの生成と管理
 - トークンの有効期限管理
 
@@ -795,7 +795,7 @@ Notionデータベースへのエクスポート時に、既存データを更�
 ユーザーがカバー画像を手動でアップロードできる機能です。Open Library APIで画像が取得できない場合や、より高品質な画像を使用したい場合に使用します。
 
 #### 4.4.2 実装方針
-- **画像ストレージ**: Vercel Blob Storage、AWS S3、Cloudinaryなど
+- **画像ストレージ**: Vercel Blob Storage、Cloudinaryなど
 - **画像形式**: JPEG、PNG、WebP
 - **画像サイズ制限**: 5MB以下
 - **画像のリサイズ**: アップロード時に自動リサイズ（推奨サイズ: 800x1200px）

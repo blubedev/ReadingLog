@@ -79,7 +79,6 @@ reading-app/
 1. [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)にアクセス
 2. アカウントを作成（無料プランで開始可能）
 3. クラスターを作成
-   - プロバイダー: AWS
    - リージョン: ap-northeast-1 (Tokyo)
    - クラスター名: `reading-app-cluster`
    - インスタンスサイズ: M0（無料枠）
