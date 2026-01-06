@@ -14,6 +14,18 @@
 - **目的**: 読書の進捗を管理し、読書記録を効率的に保存・閲覧できるWebアプリケーション
 - **対象ユーザー**: 読書習慣を身につけたい人、読んだ本を記録・管理したい人
 
+## プロジェクト構造
+
+```
+ReadTracker/
+├── frontend/          # Vue.js フロントエンド
+├── backend/           # Node.js + Express バックエンド
+│   ├── models/        # MongoDB モデル
+│   ├── db.js          # データベース接続
+│   └── index.js        # Express サーバー
+└── requirements/       # 要件定義・技術選定資料
+```
+
 ## 技術スタック
 
 - **フロントエンド**: Vue.js + Tailwind CSS
@@ -47,6 +59,39 @@
 - [CI/CDツール選定](./requirements/consideration/cicd-tool-selection.md)
 - [結合テストツール選定](./requirements/consideration/integration-test-tool-selection.md)
 - [Vercelデプロイ手順](./requirements/consideration/vercel-deployment-guide.md)
+
+## セットアップ
+
+### 初回セットアップ
+
+```bash
+# すべての依存関係をインストール
+npm run install:all
+
+# または個別にインストール
+npm run install:backend
+npm run install:frontend
+```
+
+### 開発サーバーの起動
+
+```bash
+# バックエンドとフロントエンドを同時に起動
+npm run dev
+
+# または個別に起動
+npm run dev:backend   # バックエンドのみ（ポート3000）
+npm run dev:frontend  # フロントエンドのみ（Vite開発サーバー）
+```
+
+### 環境変数の設定
+
+`backend/.env`ファイルを作成し、以下の環境変数を設定してください：
+
+```env
+MONGO_URI=your-mongodb-connection-string
+PORT=3000
+```
 
 ## ライセンス
 
