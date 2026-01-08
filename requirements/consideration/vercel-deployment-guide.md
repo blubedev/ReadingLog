@@ -103,7 +103,8 @@ reading-app/
 2. "Connect" をクリック
 3. "Connect your application" を選択
 4. 接続文字列をコピー
-   - 例: `mongodb+srv://<username>:<password>@<cluster>.mongodb.net/?retryWrites=true&w=majority`
+   - 形式: `mongodb+srv://<username>:<password>@<cluster>.mongodb.net/?retryWrites=true&w=majority`
+   - **注意**: 実際の接続文字列には、MongoDB Atlasで設定したユーザー名とパスワードが含まれます。この文字列は機密情報として扱ってください。
 
 ---
 
@@ -177,13 +178,15 @@ module.exports = app;
 
 ```env
 MONGODB_URI=your-mongodb-connection-string
-JWT_SECRET=your-secret-key-here
-JWT_REFRESH_SECRET=your-refresh-secret-key-here
+JWT_SECRET=your-jwt-secret-key
+JWT_REFRESH_SECRET=your-jwt-refresh-secret-key
 PORT=3000
 NODE_ENV=production
 ```
 
-**重要**: `.env`ファイルは`.gitignore`に追加してください。
+**重要**: 
+- `.env`ファイルは`.gitignore`に追加してください。
+- 実際の接続文字列やシークレットキーは環境変数ファイルに設定し、Gitにコミットしないでください。
 
 ---
 
@@ -399,10 +402,12 @@ Vercelダッシュボードで環境変数を設定：
 
 ```
 MONGODB_URI=your-mongodb-connection-string
-JWT_SECRET=your-secret-key-here
-JWT_REFRESH_SECRET=your-refresh-secret-key-here
+JWT_SECRET=your-jwt-secret-key
+JWT_REFRESH_SECRET=your-jwt-refresh-secret-key
 NODE_ENV=production
 ```
+
+**重要**: 実際の接続文字列やシークレットキーを設定してください。これらの値は機密情報です。
 
 **重要**: 
 - Production, Preview, Development の各環境で設定

@@ -91,7 +91,11 @@ npm run dev:frontend  # フロントエンドのみ（Vite開発サーバー）
 ```env
 MONGO_URI=your-mongodb-connection-string
 PORT=3000
+JWT_SECRET=your-jwt-secret-key
+JWT_REFRESH_SECRET=your-jwt-refresh-secret-key
 ```
+
+**注意**: 実際の接続文字列やシークレットキーは環境変数ファイルに設定し、Gitにコミットしないでください。
 
 ## ライセンス
 
