@@ -73,4 +73,7 @@ __pycache__/
 .vercel
 .turbo
 
+# メモなど
+tasks.txt
+memo.md
 
