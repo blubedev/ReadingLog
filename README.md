@@ -95,8 +95,6 @@ JWT_SECRET=your-jwt-secret-key
 JWT_REFRESH_SECRET=your-jwt-refresh-secret-key
 ```
 
-**注意**: 実際の接続文字列やシークレットキーは環境変数ファイルに設定し、Gitにコミットしないでください。
-
 ## ライセンス
 
 ISC
