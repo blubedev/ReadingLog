@@ -60,40 +60,8 @@ ReadTracker/
 - [結合テストツール選定](./requirements/consideration/integration-test-tool-selection.md)
 - [Vercelデプロイ手順](./requirements/consideration/vercel-deployment-guide.md)
 
-## セットアップ
-
-### 初回セットアップ
-
-```bash
-# すべての依存関係をインストール
-npm run install:all
-
-# または個別にインストール
-npm run install:backend
-npm run install:frontend
-```
-
-### 開発サーバーの起動
-
-```bash
-# バックエンドとフロントエンドを同時に起動
-npm run dev
-
-# または個別に起動
-npm run dev:backend   # バックエンドのみ（ポート3000）
-npm run dev:frontend  # フロントエンドのみ（Vite開発サーバー）
-```
-
-### 環境変数の設定
-
-`backend/.env`ファイルを作成し、以下の環境変数を設定してください：
-
-```env
-MONGO_URI=your-mongodb-connection-string
-PORT=3000
-JWT_SECRET=your-jwt-secret-key
-JWT_REFRESH_SECRET=your-jwt-refresh-secret-key
-```
+### セットアップ
+- [セットアップ手順](./docs/setup.md)
 
 ## ライセンス
 
