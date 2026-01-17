@@ -20,6 +20,10 @@ app.get('/hello', (req, res) => {
   res.send('Hello Express!');
 });
 
+app.get('/test', (req, res) => {
+  res.send('test success!');
+});
+
 // APIルート（今後追加予定）
 // app.use('/api/auth', require('./routes/auth'));
 // app.use('/api/books', require('./routes/books'));
