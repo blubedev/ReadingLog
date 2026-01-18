@@ -20,8 +20,8 @@ app.get('/hello', (req, res) => {
   res.send('Hello Express!');
 });
 
-app.get('/test', (req, res) => {
-  res.send('test success!');
+app.get('/api/auth/me', (req, res) => {
+  
 });
 
 // APIルート（今後追加予定）
