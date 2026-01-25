@@ -3,6 +3,7 @@ const router = express.Router();
 const Book = require('../models/Book');
 const ProgressHistory = require('../models/ProgressHistory');
 const auth = require('../middleware/auth');
+const { SUCCESS_MESSAGES, ERROR_TYPES, VALIDATION_MESSAGES, ERROR_MESSAGES, VALID_STATUSES, DEFAULT_STATUS, BOOK_STATUS } = require('../constants');
 
 // すべてのルートで認証を必須にする
 router.use(auth);
@@ -17,8 +18,8 @@ router.get('/search', async (req, res) => {
 
     if (!q) {
       return res.status(400).json({
-        error: '入力エラー',
-        message: '検索クエリを入力してください'
+        error: ERROR_TYPES.INPUT_ERROR,
+        message: VALIDATION_MESSAGES.SEARCH_QUERY_REQUIRED
       });
     }
 
@@ -82,8 +83,8 @@ router.get('/search', async (req, res) => {
   } catch (error) {
     console.error('書籍検索エラー:', error);
     res.status(500).json({
-      error: 'サーバーエラー',
-      message: '書籍情報の検索中にエラーが発生しました'
+      error: ERROR_TYPES.SERVER_ERROR,
+      message: ERROR_MESSAGES.BOOK_SEARCH_ERROR
     });
   }
 });
@@ -143,8 +144,8 @@ router.get('/', async (req, res) => {
   } catch (error) {
     console.error('本の一覧取得エラー:', error);
     res.status(500).json({
-      error: 'サーバーエラー',
-      message: '本の一覧取得中にエラーが発生しました'
+      error: ERROR_TYPES.SERVER_ERROR,
+      message: ERROR_MESSAGES.BOOK_LIST_ERROR
     });
   }
 });
@@ -162,8 +163,8 @@ router.get('/:id', async (req, res) => {
 
     if (!book) {
       return res.status(404).json({
-        error: '本が見つかりません',
-        message: '指定された本は存在しないか、アクセス権限がありません'
+        error: ERROR_TYPES.NOT_FOUND,
+        message: VALIDATION_MESSAGES.BOOK_NOT_FOUND
       });
     }
 
@@ -173,14 +174,14 @@ router.get('/:id', async (req, res) => {
     
     if (error.kind === 'ObjectId') {
       return res.status(400).json({
-        error: '入力エラー',
-        message: '無効な本のIDです'
+        error: ERROR_TYPES.INPUT_ERROR,
+        message: VALIDATION_MESSAGES.INVALID_BOOK_ID
       });
     }
     
     res.status(500).json({
-      error: 'サーバーエラー',
-      message: '本の詳細取得中にエラーが発生しました'
+      error: ERROR_TYPES.SERVER_ERROR,
+      message: ERROR_MESSAGES.BOOK_DETAIL_ERROR
     });
   }
 });
@@ -200,23 +201,22 @@ router.post('/', async (req, res) => {
       totalPages,
       coverImageUrl,
       description,
-      status = '未読'
+      status = DEFAULT_STATUS
     } = req.body;
 
     // バリデーション（タイトルは必須）
     if (!title) {
       return res.status(400).json({
-        error: '入力エラー',
-        message: 'タイトルは必須です'
+        error: ERROR_TYPES.INPUT_ERROR,
+        message: VALIDATION_MESSAGES.TITLE_REQUIRED
       });
     }
 
     // ステータスのバリデーション
-    const validStatuses = ['未読', '読書中', '読了', '中断'];
-    if (!validStatuses.includes(status)) {
+    if (!VALID_STATUSES.includes(status)) {
       return res.status(400).json({
-        error: '入力エラー',
-        message: 'ステータスは「未読」「読書中」「読了」「中断」のいずれかを指定してください'
+        error: ERROR_TYPES.INPUT_ERROR,
+        message: VALIDATION_MESSAGES.INVALID_STATUS
       });
     }
 
@@ -236,14 +236,14 @@ router.post('/', async (req, res) => {
     await book.save();
 
     res.status(201).json({
-      message: '本を登録しました',
+      message: SUCCESS_MESSAGES.BOOK_CREATED,
       book
     });
   } catch (error) {
     console.error('本の登録エラー:', error);
     res.status(500).json({
-      error: 'サーバーエラー',
-      message: '本の登録中にエラーが発生しました'
+      error: ERROR_TYPES.SERVER_ERROR,
+      message: ERROR_MESSAGES.BOOK_CREATE_ERROR
     });
   }
 });
@@ -277,18 +277,17 @@ router.put('/:id', async (req, res) => {
 
     if (!book) {
       return res.status(404).json({
-        error: '本が見つかりません',
-        message: '指定された本は存在しないか、アクセス権限がありません'
+        error: ERROR_TYPES.NOT_FOUND,
+        message: VALIDATION_MESSAGES.BOOK_NOT_FOUND
       });
     }
 
     // ステータスのバリデーション
     if (status) {
-      const validStatuses = ['未読', '読書中', '読了', '中断'];
-      if (!validStatuses.includes(status)) {
+      if (!VALID_STATUSES.includes(status)) {
         return res.status(400).json({
-          error: '入力エラー',
-          message: 'ステータスは「未読」「読書中」「読了」「中断」のいずれかを指定してください'
+          error: ERROR_TYPES.INPUT_ERROR,
+          message: VALIDATION_MESSAGES.INVALID_STATUS
         });
       }
     }
@@ -297,8 +296,8 @@ router.put('/:id', async (req, res) => {
     if (rating !== undefined && rating !== null) {
       if (rating < 0.5 || rating > 5.0 || (rating * 2) % 1 !== 0) {
         return res.status(400).json({
-          error: '入力エラー',
-          message: '評価は0.5〜5.0の範囲で、0.5刻みで入力してください'
+          error: ERROR_TYPES.INPUT_ERROR,
+          message: VALIDATION_MESSAGES.INVALID_RATING
         });
       }
     }
@@ -319,7 +318,7 @@ router.put('/:id', async (req, res) => {
     if (completedDate !== undefined) updateData.completedDate = completedDate;
 
     // ステータスが「読了」に変更された場合、読了日を自動設定
-    if (status === '読了' && book.status !== '読了' && !completedDate) {
+    if (status === BOOK_STATUS.COMPLETED && book.status !== BOOK_STATUS.COMPLETED && !completedDate) {
       updateData.completedDate = new Date();
     }
 
@@ -330,7 +329,7 @@ router.put('/:id', async (req, res) => {
     );
 
     res.json({
-      message: '本を更新しました',
+      message: SUCCESS_MESSAGES.BOOK_UPDATED,
       book: updatedBook
     });
   } catch (error) {
@@ -338,14 +337,14 @@ router.put('/:id', async (req, res) => {
     
     if (error.kind === 'ObjectId') {
       return res.status(400).json({
-        error: '入力エラー',
-        message: '無効な本のIDです'
+        error: ERROR_TYPES.INPUT_ERROR,
+        message: VALIDATION_MESSAGES.INVALID_BOOK_ID
       });
     }
     
     res.status(500).json({
-      error: 'サーバーエラー',
-      message: '本の更新中にエラーが発生しました'
+      error: ERROR_TYPES.SERVER_ERROR,
+      message: ERROR_MESSAGES.BOOK_UPDATE_ERROR
     });
   }
 });
@@ -363,8 +362,8 @@ router.delete('/:id', async (req, res) => {
 
     if (!book) {
       return res.status(404).json({
-        error: '本が見つかりません',
-        message: '指定された本は存在しないか、アクセス権限がありません'
+        error: ERROR_TYPES.NOT_FOUND,
+        message: VALIDATION_MESSAGES.BOOK_NOT_FOUND
       });
     }
 
@@ -372,7 +371,7 @@ router.delete('/:id', async (req, res) => {
     await ProgressHistory.deleteMany({ bookId: req.params.id });
 
     res.json({
-      message: '本を削除しました',
+      message: SUCCESS_MESSAGES.BOOK_DELETED,
       book
     });
   } catch (error) {
@@ -380,14 +379,14 @@ router.delete('/:id', async (req, res) => {
     
     if (error.kind === 'ObjectId') {
       return res.status(400).json({
-        error: '入力エラー',
-        message: '無効な本のIDです'
+        error: ERROR_TYPES.INPUT_ERROR,
+        message: VALIDATION_MESSAGES.INVALID_BOOK_ID
       });
     }
     
     res.status(500).json({
-      error: 'サーバーエラー',
-      message: '本の削除中にエラーが発生しました'
+      error: ERROR_TYPES.SERVER_ERROR,
+      message: ERROR_MESSAGES.BOOK_DELETE_ERROR
     });
   }
 });
@@ -402,15 +401,15 @@ router.put('/:id/progress', async (req, res) => {
 
     if (currentPage === undefined || currentPage === null) {
       return res.status(400).json({
-        error: '入力エラー',
-        message: '現在のページ数を入力してください'
+        error: ERROR_TYPES.INPUT_ERROR,
+        message: VALIDATION_MESSAGES.CURRENT_PAGE_REQUIRED
       });
     }
 
     if (currentPage < 0) {
       return res.status(400).json({
-        error: '入力エラー',
-        message: 'ページ数は0以上の数値で入力してください'
+        error: ERROR_TYPES.INPUT_ERROR,
+        message: VALIDATION_MESSAGES.PAGE_NUMBER_NON_NEGATIVE
       });
     }
 
@@ -422,8 +421,8 @@ router.put('/:id/progress', async (req, res) => {
 
     if (!book) {
       return res.status(404).json({
-        error: '本が見つかりません',
-        message: '指定された本は存在しないか、アクセス権限がありません'
+        error: ERROR_TYPES.NOT_FOUND,
+        message: VALIDATION_MESSAGES.BOOK_NOT_FOUND
       });
     }
 
@@ -448,7 +447,7 @@ router.put('/:id/progress', async (req, res) => {
     await progressHistory.save();
 
     res.json({
-      message: '進捗を更新しました',
+      message: SUCCESS_MESSAGES.PROGRESS_UPDATED,
       book,
       progress,
       progressHistory
@@ -458,14 +457,14 @@ router.put('/:id/progress', async (req, res) => {
     
     if (error.kind === 'ObjectId') {
       return res.status(400).json({
-        error: '入力エラー',
-        message: '無効な本のIDです'
+        error: ERROR_TYPES.INPUT_ERROR,
+        message: VALIDATION_MESSAGES.INVALID_BOOK_ID
       });
     }
     
     res.status(500).json({
-      error: 'サーバーエラー',
-      message: '進捗の更新中にエラーが発生しました'
+      error: ERROR_TYPES.SERVER_ERROR,
+      message: ERROR_MESSAGES.PROGRESS_UPDATE_ERROR
     });
   }
 });
@@ -484,8 +483,8 @@ router.get('/:id/progress-history', async (req, res) => {
 
     if (!book) {
       return res.status(404).json({
-        error: '本が見つかりません',
-        message: '指定された本は存在しないか、アクセス権限がありません'
+        error: ERROR_TYPES.NOT_FOUND,
+        message: VALIDATION_MESSAGES.BOOK_NOT_FOUND
       });
     }
 
@@ -503,14 +502,14 @@ router.get('/:id/progress-history', async (req, res) => {
     
     if (error.kind === 'ObjectId') {
       return res.status(400).json({
-        error: '入力エラー',
-        message: '無効な本のIDです'
+        error: ERROR_TYPES.INPUT_ERROR,
+        message: VALIDATION_MESSAGES.INVALID_BOOK_ID
       });
     }
     
     res.status(500).json({
-      error: 'サーバーエラー',
-      message: '進捗履歴の取得中にエラーが発生しました'
+      error: ERROR_TYPES.SERVER_ERROR,
+      message: ERROR_MESSAGES.PROGRESS_HISTORY_ERROR
     });
   }
 });

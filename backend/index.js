@@ -3,6 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./db');
+const { SUCCESS_MESSAGES, ERROR_TYPES, VALIDATION_MESSAGES } = require('./constants');
 
 // ルートのインポート
 const authRoutes = require('./routes/auth');
@@ -32,7 +33,7 @@ connectDB().catch(err => {
 
 // ヘルスチェック用エンドポイント
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Server is running' });
+  res.json({ status: 'ok', message: SUCCESS_MESSAGES.SERVER_RUNNING });
 });
 
 // APIルート
@@ -48,8 +49,8 @@ app.use('/api', noteRoutes);
 // 404ハンドラー
 app.use((req, res) => {
   res.status(404).json({
-    error: 'Not Found',
-    message: 'リクエストされたエンドポイントは存在しません'
+    error: ERROR_TYPES.NOT_FOUND,
+    message: VALIDATION_MESSAGES.ENDPOINT_NOT_FOUND
   });
 });
 
@@ -57,8 +58,8 @@ app.use((req, res) => {
 app.use((err, req, res, next) => {
   console.error('サーバーエラー:', err);
   res.status(500).json({
-    error: 'Internal Server Error',
-    message: 'サーバー内部でエラーが発生しました'
+    error: ERROR_TYPES.INTERNAL_SERVER_ERROR,
+    message: VALIDATION_MESSAGES.INTERNAL_ERROR
   });
 });
 

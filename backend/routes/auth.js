@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
+const { SUCCESS_MESSAGES, ERROR_TYPES, VALIDATION_MESSAGES, ERROR_MESSAGES } = require('../constants');
 
 // 環境変数
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
@@ -21,8 +22,8 @@ router.post('/register', async (req, res) => {
     // バリデーション
     if (!username || !email || !password) {
       return res.status(400).json({
-        error: '入力エラー',
-        message: 'ユーザー名、メールアドレス、パスワードは必須です'
+        error: ERROR_TYPES.INPUT_ERROR,
+        message: VALIDATION_MESSAGES.USERNAME_EMAIL_PASSWORD_REQUIRED
       });
     }
 
@@ -30,16 +31,16 @@ router.post('/register', async (req, res) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({
-        error: '入力エラー',
-        message: '有効なメールアドレスを入力してください'
+        error: ERROR_TYPES.INPUT_ERROR,
+        message: VALIDATION_MESSAGES.INVALID_EMAIL
       });
     }
 
     // パスワードの長さチェック
     if (password.length < 6) {
       return res.status(400).json({
-        error: '入力エラー',
-        message: 'パスワードは6文字以上で入力してください'
+        error: ERROR_TYPES.INPUT_ERROR,
+        message: VALIDATION_MESSAGES.PASSWORD_MIN_LENGTH
       });
     }
 
@@ -47,8 +48,8 @@ router.post('/register', async (req, res) => {
     const existingEmail = await User.findOne({ email: email.toLowerCase() });
     if (existingEmail) {
       return res.status(409).json({
-        error: '登録エラー',
-        message: 'このメールアドレスは既に登録されています'
+        error: ERROR_TYPES.REGISTER_ERROR,
+        message: VALIDATION_MESSAGES.EMAIL_ALREADY_EXISTS
       });
     }
 
@@ -56,8 +57,8 @@ router.post('/register', async (req, res) => {
     const existingUsername = await User.findOne({ username });
     if (existingUsername) {
       return res.status(409).json({
-        error: '登録エラー',
-        message: 'このユーザー名は既に使用されています'
+        error: ERROR_TYPES.REGISTER_ERROR,
+        message: VALIDATION_MESSAGES.USERNAME_ALREADY_EXISTS
       });
     }
 
@@ -81,7 +82,7 @@ router.post('/register', async (req, res) => {
     );
 
     res.status(201).json({
-      message: 'ユーザー登録が完了しました',
+      message: SUCCESS_MESSAGES.REGISTER_SUCCESS,
       user: {
         id: user._id,
         username: user.username,
@@ -93,8 +94,8 @@ router.post('/register', async (req, res) => {
   } catch (error) {
     console.error('ユーザー登録エラー:', error);
     res.status(500).json({
-      error: 'サーバーエラー',
-      message: 'ユーザー登録中にエラーが発生しました'
+      error: ERROR_TYPES.SERVER_ERROR,
+      message: ERROR_MESSAGES.REGISTER_ERROR
     });
   }
 });
@@ -110,8 +111,8 @@ router.post('/login', async (req, res) => {
     // バリデーション
     if (!email || !password) {
       return res.status(400).json({
-        error: '入力エラー',
-        message: 'メールアドレスとパスワードは必須です'
+        error: ERROR_TYPES.INPUT_ERROR,
+        message: VALIDATION_MESSAGES.EMAIL_PASSWORD_REQUIRED
       });
     }
 
@@ -119,8 +120,8 @@ router.post('/login', async (req, res) => {
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
       return res.status(401).json({
-        error: '認証エラー',
-        message: 'メールアドレスまたはパスワードが正しくありません'
+        error: ERROR_TYPES.AUTH_ERROR,
+        message: VALIDATION_MESSAGES.INVALID_CREDENTIALS
       });
     }
 
@@ -128,8 +129,8 @@ router.post('/login', async (req, res) => {
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
       return res.status(401).json({
-        error: '認証エラー',
-        message: 'メールアドレスまたはパスワードが正しくありません'
+        error: ERROR_TYPES.AUTH_ERROR,
+        message: VALIDATION_MESSAGES.INVALID_CREDENTIALS
       });
     }
 
@@ -141,7 +142,7 @@ router.post('/login', async (req, res) => {
     );
 
     res.json({
-      message: 'ログインに成功しました',
+      message: SUCCESS_MESSAGES.LOGIN_SUCCESS,
       user: {
         id: user._id,
         username: user.username,
@@ -152,8 +153,8 @@ router.post('/login', async (req, res) => {
   } catch (error) {
     console.error('ログインエラー:', error);
     res.status(500).json({
-      error: 'サーバーエラー',
-      message: 'ログイン中にエラーが発生しました'
+      error: ERROR_TYPES.SERVER_ERROR,
+      message: ERROR_MESSAGES.LOGIN_ERROR
     });
   }
 });
@@ -166,7 +167,7 @@ router.post('/logout', auth, (req, res) => {
   // JWTはステートレスなので、サーバー側での処理は不要
   // クライアント側でトークンを削除することでログアウトを実現
   res.json({
-    message: 'ログアウトしました'
+    message: SUCCESS_MESSAGES.LOGOUT_SUCCESS
   });
 });
 
@@ -180,8 +181,8 @@ router.get('/me', auth, async (req, res) => {
     
     if (!user) {
       return res.status(404).json({
-        error: 'ユーザーが見つかりません',
-        message: 'ログインしているユーザーが存在しません'
+        error: ERROR_TYPES.NOT_FOUND,
+        message: VALIDATION_MESSAGES.USER_NOT_FOUND
       });
     }
 
@@ -197,8 +198,8 @@ router.get('/me', auth, async (req, res) => {
   } catch (error) {
     console.error('ユーザー情報取得エラー:', error);
     res.status(500).json({
-      error: 'サーバーエラー',
-      message: 'ユーザー情報の取得中にエラーが発生しました'
+      error: ERROR_TYPES.SERVER_ERROR,
+      message: ERROR_MESSAGES.USER_INFO_ERROR
     });
   }
 });
@@ -213,8 +214,8 @@ router.post('/refresh', auth, async (req, res) => {
     
     if (!user) {
       return res.status(404).json({
-        error: 'ユーザーが見つかりません',
-        message: 'ログインしているユーザーが存在しません'
+        error: ERROR_TYPES.NOT_FOUND,
+        message: VALIDATION_MESSAGES.USER_NOT_FOUND
       });
     }
 
@@ -226,14 +227,14 @@ router.post('/refresh', auth, async (req, res) => {
     );
 
     res.json({
-      message: 'トークンを更新しました',
+      message: SUCCESS_MESSAGES.TOKEN_REFRESH_SUCCESS,
       token
     });
   } catch (error) {
     console.error('トークンリフレッシュエラー:', error);
     res.status(500).json({
-      error: 'サーバーエラー',
-      message: 'トークンの更新中にエラーが発生しました'
+      error: ERROR_TYPES.SERVER_ERROR,
+      message: ERROR_MESSAGES.TOKEN_REFRESH_ERROR
     });
   }
 });

@@ -3,6 +3,7 @@ const router = express.Router();
 const Note = require('../models/Note');
 const Book = require('../models/Book');
 const auth = require('../middleware/auth');
+const { SUCCESS_MESSAGES, ERROR_TYPES, VALIDATION_MESSAGES, ERROR_MESSAGES } = require('../constants');
 
 // すべてのルートで認証を必須にする
 router.use(auth);
@@ -23,8 +24,8 @@ router.get('/books/:bookId/notes', async (req, res) => {
 
     if (!book) {
       return res.status(404).json({
-        error: '本が見つかりません',
-        message: '指定された本は存在しないか、アクセス権限がありません'
+        error: ERROR_TYPES.NOT_FOUND,
+        message: VALIDATION_MESSAGES.BOOK_NOT_FOUND
       });
     }
 
@@ -42,14 +43,14 @@ router.get('/books/:bookId/notes', async (req, res) => {
     
     if (error.kind === 'ObjectId') {
       return res.status(400).json({
-        error: '入力エラー',
-        message: '無効な本のIDです'
+        error: ERROR_TYPES.INPUT_ERROR,
+        message: VALIDATION_MESSAGES.INVALID_BOOK_ID
       });
     }
     
     res.status(500).json({
-      error: 'サーバーエラー',
-      message: 'メモの取得中にエラーが発生しました'
+      error: ERROR_TYPES.SERVER_ERROR,
+      message: ERROR_MESSAGES.NOTE_LIST_ERROR
     });
   }
 });
@@ -66,8 +67,8 @@ router.post('/books/:bookId/notes', async (req, res) => {
     // バリデーション
     if (!content || content.trim() === '') {
       return res.status(400).json({
-        error: '入力エラー',
-        message: 'メモの内容を入力してください'
+        error: ERROR_TYPES.INPUT_ERROR,
+        message: VALIDATION_MESSAGES.NOTE_CONTENT_REQUIRED
       });
     }
 
@@ -79,8 +80,8 @@ router.post('/books/:bookId/notes', async (req, res) => {
 
     if (!book) {
       return res.status(404).json({
-        error: '本が見つかりません',
-        message: '指定された本は存在しないか、アクセス権限がありません'
+        error: ERROR_TYPES.NOT_FOUND,
+        message: VALIDATION_MESSAGES.BOOK_NOT_FOUND
       });
     }
 
@@ -93,7 +94,7 @@ router.post('/books/:bookId/notes', async (req, res) => {
     await note.save();
 
     res.status(201).json({
-      message: 'メモを追加しました',
+      message: SUCCESS_MESSAGES.NOTE_CREATED,
       note
     });
   } catch (error) {
@@ -101,14 +102,14 @@ router.post('/books/:bookId/notes', async (req, res) => {
     
     if (error.kind === 'ObjectId') {
       return res.status(400).json({
-        error: '入力エラー',
-        message: '無効な本のIDです'
+        error: ERROR_TYPES.INPUT_ERROR,
+        message: VALIDATION_MESSAGES.INVALID_BOOK_ID
       });
     }
     
     res.status(500).json({
-      error: 'サーバーエラー',
-      message: 'メモの追加中にエラーが発生しました'
+      error: ERROR_TYPES.SERVER_ERROR,
+      message: ERROR_MESSAGES.NOTE_CREATE_ERROR
     });
   }
 });
@@ -126,8 +127,8 @@ router.get('/:id', async (req, res) => {
 
     if (!note) {
       return res.status(404).json({
-        error: 'メモが見つかりません',
-        message: '指定されたメモは存在しないか、アクセス権限がありません'
+        error: ERROR_TYPES.NOT_FOUND,
+        message: VALIDATION_MESSAGES.NOTE_NOT_FOUND
       });
     }
 
@@ -137,14 +138,14 @@ router.get('/:id', async (req, res) => {
     
     if (error.kind === 'ObjectId') {
       return res.status(400).json({
-        error: '入力エラー',
-        message: '無効なメモのIDです'
+        error: ERROR_TYPES.INPUT_ERROR,
+        message: VALIDATION_MESSAGES.INVALID_NOTE_ID
       });
     }
     
     res.status(500).json({
-      error: 'サーバーエラー',
-      message: 'メモの取得中にエラーが発生しました'
+      error: ERROR_TYPES.SERVER_ERROR,
+      message: ERROR_MESSAGES.NOTE_DETAIL_ERROR
     });
   }
 });
@@ -160,8 +161,8 @@ router.put('/:id', async (req, res) => {
     // バリデーション
     if (!content || content.trim() === '') {
       return res.status(400).json({
-        error: '入力エラー',
-        message: 'メモの内容を入力してください'
+        error: ERROR_TYPES.INPUT_ERROR,
+        message: VALIDATION_MESSAGES.NOTE_CONTENT_REQUIRED
       });
     }
 
@@ -173,8 +174,8 @@ router.put('/:id', async (req, res) => {
 
     if (!note) {
       return res.status(404).json({
-        error: 'メモが見つかりません',
-        message: '指定されたメモは存在しないか、アクセス権限がありません'
+        error: ERROR_TYPES.NOT_FOUND,
+        message: VALIDATION_MESSAGES.NOTE_NOT_FOUND
       });
     }
 
@@ -182,7 +183,7 @@ router.put('/:id', async (req, res) => {
     await note.save();
 
     res.json({
-      message: 'メモを更新しました',
+      message: SUCCESS_MESSAGES.NOTE_UPDATED,
       note
     });
   } catch (error) {
@@ -190,14 +191,14 @@ router.put('/:id', async (req, res) => {
     
     if (error.kind === 'ObjectId') {
       return res.status(400).json({
-        error: '入力エラー',
-        message: '無効なメモのIDです'
+        error: ERROR_TYPES.INPUT_ERROR,
+        message: VALIDATION_MESSAGES.INVALID_NOTE_ID
       });
     }
     
     res.status(500).json({
-      error: 'サーバーエラー',
-      message: 'メモの更新中にエラーが発生しました'
+      error: ERROR_TYPES.SERVER_ERROR,
+      message: ERROR_MESSAGES.NOTE_UPDATE_ERROR
     });
   }
 });
@@ -215,13 +216,13 @@ router.delete('/:id', async (req, res) => {
 
     if (!note) {
       return res.status(404).json({
-        error: 'メモが見つかりません',
-        message: '指定されたメモは存在しないか、アクセス権限がありません'
+        error: ERROR_TYPES.NOT_FOUND,
+        message: VALIDATION_MESSAGES.NOTE_NOT_FOUND
       });
     }
 
     res.json({
-      message: 'メモを削除しました',
+      message: SUCCESS_MESSAGES.NOTE_DELETED,
       note
     });
   } catch (error) {
@@ -229,14 +230,14 @@ router.delete('/:id', async (req, res) => {
     
     if (error.kind === 'ObjectId') {
       return res.status(400).json({
-        error: '入力エラー',
-        message: '無効なメモのIDです'
+        error: ERROR_TYPES.INPUT_ERROR,
+        message: VALIDATION_MESSAGES.INVALID_NOTE_ID
       });
     }
     
     res.status(500).json({
-      error: 'サーバーエラー',
-      message: 'メモの削除中にエラーが発生しました'
+      error: ERROR_TYPES.SERVER_ERROR,
+      message: ERROR_MESSAGES.NOTE_DELETE_ERROR
     });
   }
 });

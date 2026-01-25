@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const { ERROR_TYPES, VALIDATION_MESSAGES, ERROR_MESSAGES } = require('../constants');
 
 // JWT認証ミドルウェア
 const auth = async (req, res, next) => {
@@ -8,8 +9,8 @@ const auth = async (req, res, next) => {
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({ 
-        error: '認証が必要です',
-        message: 'アクセストークンが見つかりません'
+        error: ERROR_TYPES.AUTH_REQUIRED,
+        message: VALIDATION_MESSAGES.TOKEN_NOT_FOUND
       });
     }
 
@@ -26,21 +27,21 @@ const auth = async (req, res, next) => {
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
       return res.status(401).json({ 
-        error: 'トークンの有効期限が切れています',
-        message: '再度ログインしてください'
+        error: VALIDATION_MESSAGES.TOKEN_EXPIRED,
+        message: VALIDATION_MESSAGES.TOKEN_EXPIRED_ACTION
       });
     }
     
     if (error.name === 'JsonWebTokenError') {
       return res.status(401).json({ 
-        error: '無効なトークンです',
-        message: '正しいトークンで再度お試しください'
+        error: VALIDATION_MESSAGES.INVALID_TOKEN,
+        message: VALIDATION_MESSAGES.INVALID_TOKEN_ACTION
       });
     }
     
     console.error('認証エラー:', error);
     res.status(500).json({ 
-      error: '認証処理中にエラーが発生しました',
+      error: VALIDATION_MESSAGES.AUTH_PROCESS_ERROR,
       message: error.message
     });
   }

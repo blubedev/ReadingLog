@@ -1,0 +1,24 @@
+// 本の読書状況
+const BOOK_STATUS = {
+  UNREAD: '未読',
+  READING: '読書中',
+  COMPLETED: '読了',
+  ABANDONED: '中断'
+};
+
+// 有効なステータス一覧
+const VALID_STATUSES = [
+  BOOK_STATUS.UNREAD,
+  BOOK_STATUS.READING,
+  BOOK_STATUS.COMPLETED,
+  BOOK_STATUS.ABANDONED
+];
+
+// デフォルトステータス
+const DEFAULT_STATUS = BOOK_STATUS.UNREAD;
+
+module.exports = {
+  BOOK_STATUS,
+  VALID_STATUSES,
+  DEFAULT_STATUS
+};
