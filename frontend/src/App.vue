@@ -1,49 +1,29 @@
-<script setup>
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
-import Test from './components/Test.vue'
-</script>
-
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-    </div>
-  </header>
-
-  <main>
-    <TheWelcome />
-    <Test />
-  </main>
+  <router-view />
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
-}
+<script setup>
+import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
+const router = useRouter()
+const authStore = useAuthStore()
 
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
+onMounted(async () => {
+  // トークンがある場合、ユーザー情報を取得
+  if (authStore.token) {
+    try {
+      await authStore.fetchMe()
+    } catch (error) {
+      // トークンが無効な場合、認証情報をクリア
+      console.error('Failed to fetch user info:', error)
+      authStore.clearAuth()
+      // 認証が必要なページにいる場合はログインページへ
+      if (router.currentRoute.value.meta.requiresAuth) {
+        router.push({ name: 'Login' })
+      }
+    }
   }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-}
-</style>
+})
+</script>
