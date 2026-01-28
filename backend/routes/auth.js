@@ -93,6 +93,17 @@ router.post('/register', async (req, res) => {
     });
   } catch (error) {
     console.error('ユーザー登録エラー:', error);
+
+    // MongoDB のバリデーション / 一意制約などのエラー内容をクライアント側で確認できるようにする
+    if (error.name === 'MongoServerError' || error.name === 'MongoError' || error.name === 'ValidationError') {
+      return res.status(500).json({
+        error: ERROR_TYPES.SERVER_ERROR,
+        message: ERROR_MESSAGES.REGISTER_ERROR,
+        detail: error.message,
+        code: error.code
+      });
+    }
+
     res.status(500).json({
       error: ERROR_TYPES.SERVER_ERROR,
       message: ERROR_MESSAGES.REGISTER_ERROR
