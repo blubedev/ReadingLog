@@ -34,7 +34,8 @@ export const useAuthStore = defineStore('auth', {
         this.setAuth(data.user, data.token);
         return data;
       } catch (error) {
-        this.error = error.response?.data?.message || '登録に失敗しました';
+        const data = error.response?.data;
+        this.error = data?.detail || data?.message || '登録に失敗しました';
         throw error;
       } finally {
         this.isLoading = false;

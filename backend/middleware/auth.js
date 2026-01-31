@@ -16,8 +16,9 @@ const auth = async (req, res, next) => {
 
     const token = authHeader.replace('Bearer ', '');
     
-    // トークンの検証
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // トークンの検証（auth ルートと同じフォールバックを使用）
+    const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+    const decoded = jwt.verify(token, JWT_SECRET);
     
     // リクエストオブジェクトにユーザー情報を追加
     req.userId = decoded.userId;

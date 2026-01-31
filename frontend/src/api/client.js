@@ -27,6 +27,14 @@ client.interceptors.request.use(
 client.interceptors.response.use(
   (response) => response,
   (error) => {
+    // デバッグ用にエラー内容を詳細に出力
+    console.error('[API error]', {
+      url: error.config?.url,
+      method: error.config?.method,
+      status: error.response?.status,
+      data: error.response?.data,
+    });
+
     if (error.response?.status === 401) {
       // 認証エラーの場合、トークンを削除してログインページへ
       localStorage.removeItem('token');
