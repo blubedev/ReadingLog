@@ -110,7 +110,7 @@ router.post('/register', async (req, res) => {
  */
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    let { email, password } = req.body;
 
     // バリデーション
     if (!email || !password) {
@@ -120,9 +120,14 @@ router.post('/login', async (req, res) => {
       });
     }
 
+    // メールアドレスは登録時と同様に trim して小文字で検索（登録時はスキーマで trim されるため）
+    email = typeof email === 'string' ? email.trim().toLowerCase() : email.toLowerCase();
+    password = typeof password === 'string' ? password : String(password);
+
     // ユーザーの検索
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const user = await User.findOne({ email });
     if (!user) {
+      console.error('ログイン失敗: ユーザーが見つかりません（メールに該当するアカウントなし）');
       return res.status(401).json({
         error: ERROR_TYPES.AUTH_ERROR,
         message: VALIDATION_MESSAGES.INVALID_CREDENTIALS
@@ -132,6 +137,7 @@ router.post('/login', async (req, res) => {
     // パスワードの検証
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
+      console.error('ログイン失敗: パスワードが一致しません');
       return res.status(401).json({
         error: ERROR_TYPES.AUTH_ERROR,
         message: VALIDATION_MESSAGES.INVALID_CREDENTIALS
