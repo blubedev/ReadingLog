@@ -1,7 +1,7 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div class="min-h-screen bg-gray-50 flex flex-col">
     <Navbar />
-    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <div class="flex-1 max-w-7xl mx-auto w-full py-6 sm:px-6 lg:px-8">
       <div class="px-4 py-6 sm:px-0">
         <!-- 検索・フィルタ -->
         <div class="bg-white shadow rounded-lg p-6 mb-6">
@@ -143,6 +143,16 @@
         </div>
       </div>
     </div>
+
+    <!-- フッター -->
+    <footer class="mt-auto border-t border-gray-200 bg-white">
+      <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <div class="text-center text-sm text-gray-500">
+          <p>ReadTracker — 読書進捗管理アプリ</p>
+          <p class="mt-1">© {{ new Date().getFullYear() }} ReadTracker</p>
+        </div>
+      </div>
+    </footer>
   </div>
 </template>
 
