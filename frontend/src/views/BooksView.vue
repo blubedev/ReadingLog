@@ -186,11 +186,11 @@
                 </div>
               </div>
             </div>
-            <!-- アクションボタン -->
+            <!-- アクションボタン（カードフッター） -->
             <div class="flex items-center gap-2 p-4 border-t border-gray-100">
               <router-link
                 :to="`/books/${book._id}/edit`"
-                class="flex-1 flex items-center justify-center gap-1 py-2 px-3 rounded-lg text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200"
+                class="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg text-sm font-medium bg-gray-50 border border-[#34C759]/70 text-[#2db34d] hover:bg-green-50 hover:border-[#34C759]"
                 @click.stop
               >
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -200,7 +200,7 @@
               </router-link>
               <button
                 type="button"
-                class="p-2 rounded-lg text-gray-500 hover:bg-red-50 hover:text-red-600"
+                class="flex items-center justify-center py-2.5 px-3 rounded-lg bg-gray-50 border border-red-400/70 text-red-600 hover:bg-red-50 hover:border-red-500"
                 aria-label="削除"
                 @click.stop="handleDelete(book._id)"
               >
@@ -239,11 +239,61 @@
     </div>
 
     <!-- フッター -->
-    <footer class="mt-auto border-t border-gray-200 bg-white">
-      <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        <div class="text-center text-sm text-gray-500">
-          <p>ReadTracker — 読書進捗管理アプリ</p>
-          <p class="mt-1">© {{ new Date().getFullYear() }} ReadTracker</p>
+    <footer class="mt-auto bg-white">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <!-- メインコンテンツ -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <!-- 左: ブランド・説明 -->
+          <div>
+            <div class="flex items-center gap-2 mb-3">
+              <svg class="h-5 w-5 text-[#2ECC71] flex-shrink-0" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66.95-2.3c.48.17.98.3 1.34.3C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5s1.75 3.75 1.75 3.75C7 8 17 8 17 8z" />
+              </svg>
+              <span class="text-lg font-bold text-gray-800">ReadTracker</span>
+            </div>
+            <p class="text-sm text-gray-500 leading-relaxed">
+              読書の進捗を手軽に記録・管理できるアプリです。読書習慣を可視化し、より充実した読書生活へと導きます。
+            </p>
+          </div>
+          <!-- 中央: リンク -->
+          <div>
+            <h3 class="text-sm font-bold text-gray-800 mb-3">リンク</h3>
+            <nav class="flex flex-col gap-2">
+              <a href="#" class="text-sm text-gray-500 hover:text-[#2ECC71]">使い方ガイド</a>
+              <a href="#" class="text-sm text-gray-500 hover:text-[#2ECC71]">プライバシーポリシー</a>
+              <a href="#" class="text-sm text-gray-500 hover:text-[#2ECC71]">利用規約</a>
+              <a href="#" class="text-sm text-gray-500 hover:text-[#2ECC71]">お問い合わせ</a>
+            </nav>
+          </div>
+          <!-- 右: サポート -->
+          <div>
+            <h3 class="text-sm font-bold text-gray-800 mb-3">サポート</h3>
+            <nav class="flex flex-col gap-2">
+              <a href="#" class="text-sm text-gray-500 hover:text-[#2ECC71]">よくある質問</a>
+              <a href="#" class="text-sm text-gray-500 hover:text-[#2ECC71]">フィードバック</a>
+              <a href="#" class="text-sm text-gray-500 hover:text-[#2ECC71]">機能リクエスト</a>
+            </nav>
+          </div>
+        </div>
+        <!-- 区切り線 -->
+        <div class="border-t border-[#2ECC71]/40 my-8" />
+        <!-- 著作権・クレジット -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <p class="text-sm text-gray-400">© {{ new Date().getFullYear() }} ReadTracker. All rights reserved.</p>
+          <div class="flex items-center gap-2">
+            <span class="text-sm text-gray-400">Made with</span>
+            <svg class="h-4 w-4 text-[#2ECC71]" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+            </svg>
+            <span class="text-sm text-gray-400">for book lovers</span>
+            <button
+              type="button"
+              class="ml-2 w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-300"
+              aria-label="ヘルプ"
+            >
+              <span class="text-sm font-medium">?</span>
+            </button>
+          </div>
         </div>
       </div>
     </footer>
