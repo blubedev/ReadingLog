@@ -90,13 +90,55 @@ router.get('/search', async (req, res) => {
 });
 
 /**
+ * GET /api/books/stats
+ * 読書統計を返す（総冊数、読書中/読みたい/読了の件数、総読書ページ数、平均進捗率）
+ */
+router.get('/stats', async (req, res) => {
+  try {
+    const userId = req.userId;
+
+    const [totalBooks, readingCount, wantCount, finishedCount, books] = await Promise.all([
+      Book.countDocuments({ userId }),
+      Book.countDocuments({ userId, status: '読書中' }),
+      Book.countDocuments({ userId, status: '未読' }),
+      Book.countDocuments({ userId, status: '読了' }),
+      Book.find({ userId }).select('currentPage totalPages')
+    ]);
+
+    const totalPagesRead = books.reduce((sum, b) => sum + (b.currentPage || 0), 0);
+    const withTotal = books.filter((b) => b.totalPages && b.totalPages > 0);
+    const averageProgress =
+      withTotal.length > 0
+        ? Math.round(
+            withTotal.reduce((sum, b) => sum + ((b.currentPage || 0) / b.totalPages) * 100, 0) / withTotal.length
+          )
+        : 0;
+
+    res.json({
+      totalBooks,
+      readingCount,
+      wantCount,
+      finishedCount,
+      totalPagesRead,
+      averageProgress
+    });
+  } catch (error) {
+    console.error('読書統計取得エラー:', error);
+    res.status(500).json({
+      error: ERROR_TYPES.SERVER_ERROR,
+      message: ERROR_MESSAGES.BOOK_LIST_ERROR
+    });
+  }
+});
+
+/**
  * GET /api/books
  * 本の一覧取得（自分の本のみ）
- * クエリパラメータ: search, status, rating, page, limit
+ * クエリパラメータ: search, status, rating, page, limit, sortBy, sortOrder
  */
 router.get('/', async (req, res) => {
   try {
-    const { search, status, rating, page = 1, limit = 20 } = req.query;
+    const { search, status, rating, page = 1, limit = 20, sortBy = 'updatedAt', sortOrder = 'desc' } = req.query;
     const userId = req.userId;
 
     // クエリ条件の構築
@@ -120,13 +162,19 @@ router.get('/', async (req, res) => {
       query.rating = { $gte: parseFloat(rating) };
     }
 
+    // ソート条件（sortBy: createdAt, updatedAt, title / sortOrder: asc, desc）
+    const validSortFields = ['createdAt', 'updatedAt', 'title'];
+    const sortField = validSortFields.includes(sortBy) ? sortBy : 'updatedAt';
+    const sortDir = sortOrder === 'asc' ? 1 : -1;
+    const sortOption = { [sortField]: sortDir };
+
     // ページネーション
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
     // 本の取得
     const [books, total] = await Promise.all([
       Book.find(query)
-        .sort({ updatedAt: -1 })
+        .sort(sortOption)
         .skip(skip)
         .limit(parseInt(limit)),
       Book.countDocuments(query)

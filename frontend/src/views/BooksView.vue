@@ -17,7 +17,7 @@
               </svg>
             </div>
             <p class="text-sm text-gray-500 mb-1">総冊数</p>
-            <p class="text-2xl font-bold text-gray-900">{{ stats.totalBooks }}</p>
+            <p class="text-2xl font-bold text-gray-900">{{ booksStore.stats.totalBooks }}</p>
           </div>
           <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm relative">
             <div class="absolute top-3 right-3 text-gray-300">
@@ -26,7 +26,7 @@
               </svg>
             </div>
             <p class="text-sm text-gray-500 mb-1">読書中</p>
-            <p class="text-2xl font-bold text-gray-900">{{ stats.readingCount }}</p>
+            <p class="text-2xl font-bold text-gray-900">{{ booksStore.stats.readingCount }}</p>
           </div>
           <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm relative">
             <div class="absolute top-3 right-3 text-gray-300">
@@ -35,7 +35,7 @@
               </svg>
             </div>
             <p class="text-sm text-gray-500 mb-1">読了</p>
-            <p class="text-2xl font-bold text-gray-900">{{ stats.finishedCount }}</p>
+            <p class="text-2xl font-bold text-gray-900">{{ booksStore.stats.finishedCount }}</p>
           </div>
           <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm relative">
             <div class="absolute top-3 right-3 text-gray-300">
@@ -44,8 +44,8 @@
               </svg>
             </div>
             <p class="text-sm text-gray-500 mb-1">総読書ページ</p>
-            <p class="text-2xl font-bold text-gray-900">{{ stats.totalPagesRead }}</p>
-            <p class="text-xs text-gray-500 mt-1">平均進捗率 {{ stats.averageProgress }}%</p>
+            <p class="text-2xl font-bold text-gray-900">{{ booksStore.stats.totalPagesRead }}</p>
+            <p class="text-xs text-gray-500 mt-1">平均進捗率 {{ booksStore.stats.averageProgress }}%</p>
           </div>
         </div>
 
@@ -264,41 +264,13 @@ const viewMode = ref('grid');
 // 読みたい = 未読
 const statusMap = { all: '', reading: '読書中', want: '未読', finished: '読了' };
 
-const stats = computed(() => {
-  const books = booksStore.books;
-  const totalBooks = booksStore.pagination.total;
-  const readingCount = books.filter((b) => b.status === '読書中').length;
-  const finishedCount = books.filter((b) => b.status === '読了').length;
-  const totalPagesRead = books.reduce((sum, b) => sum + (b.currentPage || 0), 0);
-  const withTotal = books.filter((b) => b.totalPages && b.totalPages > 0);
-  const averageProgress =
-    withTotal.length > 0
-      ? Math.round(
-          withTotal.reduce((sum, b) => sum + ((b.currentPage || 0) / b.totalPages) * 100, 0) / withTotal.length
-        )
-      : 0;
-  return {
-    totalBooks,
-    readingCount,
-    finishedCount,
-    totalPagesRead,
-    averageProgress,
-  };
-});
-
-const statusTabs = computed(() => {
-  const books = booksStore.books;
-  const all = booksStore.pagination.total;
-  const reading = books.filter((b) => b.status === '読書中').length;
-  const want = books.filter((b) => b.status === '未読').length;
-  const finished = books.filter((b) => b.status === '読了').length;
-  return [
-    { value: 'all', label: 'すべて', count: all },
-    { value: 'reading', label: '読書中', count: reading },
-    { value: 'want', label: '読みたい', count: want },
-    { value: 'finished', label: '読了', count: finished },
-  ];
-});
+// タブの件数はAPIから取得した統計を使用
+const statusTabs = computed(() => [
+  { value: 'all', label: 'すべて', count: booksStore.stats.totalBooks },
+  { value: 'reading', label: '読書中', count: booksStore.stats.readingCount },
+  { value: 'want', label: '読みたい', count: booksStore.stats.wantCount },
+  { value: 'finished', label: '読了', count: booksStore.stats.finishedCount },
+]);
 
 // タブ選択時にAPIでフィルタしているため、表示は booksStore.books をそのまま使用
 const filteredBooks = computed(() => booksStore.books);

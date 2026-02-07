@@ -15,6 +15,12 @@ export const booksApi = {
     return response.data;
   },
 
+  // 読書統計取得
+  getStats: async () => {
+    const response = await client.get('/books/stats');
+    return response.data;
+  },
+
   // 書籍詳細取得
   getBook: async (id) => {
     const response = await client.get(`/books/${id}`);

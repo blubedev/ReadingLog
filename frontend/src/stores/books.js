@@ -7,6 +7,14 @@ export const useBooksStore = defineStore('books', {
     currentBook: null,
     searchResults: [],
     progressHistory: [],
+    stats: {
+      totalBooks: 0,
+      readingCount: 0,
+      wantCount: 0,
+      finishedCount: 0,
+      totalPagesRead: 0,
+      averageProgress: 0,
+    },
     pagination: {
       total: 0,
       page: 1,
@@ -17,6 +25,8 @@ export const useBooksStore = defineStore('books', {
       search: '',
       status: '',
       rating: '',
+      sortBy: 'updatedAt',
+      sortOrder: 'desc',
     },
     isLoading: false,
     error: null,
@@ -49,12 +59,24 @@ export const useBooksStore = defineStore('books', {
         const data = await booksApi.getBooks(queryParams);
         this.books = data.books || [];
         this.pagination = data.pagination || this.pagination;
+        await this.fetchStats();
         return data;
       } catch (error) {
         this.error = error.response?.data?.message || '書籍一覧の取得に失敗しました';
         throw error;
       } finally {
         this.isLoading = false;
+      }
+    },
+
+    async fetchStats() {
+      try {
+        const data = await booksApi.getStats();
+        this.stats = data;
+        return data;
+      } catch (error) {
+        console.error('統計取得エラー:', error);
+        return null;
       }
     },
 
@@ -162,6 +184,8 @@ export const useBooksStore = defineStore('books', {
         search: '',
         status: '',
         rating: '',
+        sortBy: 'updatedAt',
+        sortOrder: 'desc',
       };
     },
   },
