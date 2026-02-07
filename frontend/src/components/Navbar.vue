@@ -1,6 +1,6 @@
 <template>
-  <nav class="bg-white shadow-lg relative">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <nav class="bg-white shadow-lg relative border-b border-[#2ECC71]/40">
+    <div class="w-full px-4 sm:px-6 lg:px-8 xl:px-12">
       <div class="flex justify-between h-16">
         <div class="flex items-center">
           <!-- ドロワー開閉ボタン（左端） -->

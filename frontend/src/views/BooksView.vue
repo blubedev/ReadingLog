@@ -1,16 +1,16 @@
 <template>
   <div class="min-h-screen bg-gray-50 flex flex-col">
     <Navbar />
-    <div class="flex-1 max-w-7xl mx-auto w-full py-6 sm:px-6 lg:px-8">
-      <div class="px-4 py-6 sm:px-0">
+    <div class="flex-1 w-full py-6 px-4 sm:px-6 lg:px-8 xl:px-12">
+      <div class="w-full">
         <!-- 導入テキスト -->
         <p class="text-gray-600 mb-6">
           読書の進捗を記録して、読書習慣を可視化しましょう
         </p>
 
         <!-- 統計カード -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm relative">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6">
+          <div class="bg-white rounded-xl border border-[#2ECC71]/40 p-4 shadow-sm relative">
             <div class="absolute top-3 right-3 text-gray-300">
               <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
@@ -19,7 +19,7 @@
             <p class="text-sm text-gray-500 mb-1">総冊数</p>
             <p class="text-2xl font-bold text-gray-900">{{ booksStore.stats.totalBooks }}</p>
           </div>
-          <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm relative">
+          <div class="bg-white rounded-xl border border-[#2ECC71]/40 p-4 shadow-sm relative">
             <div class="absolute top-3 right-3 text-gray-300">
               <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z" />
@@ -28,7 +28,7 @@
             <p class="text-sm text-gray-500 mb-1">読書中</p>
             <p class="text-2xl font-bold text-gray-900">{{ booksStore.stats.readingCount }}</p>
           </div>
-          <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm relative">
+          <div class="bg-white rounded-xl border border-[#2ECC71]/40 p-4 shadow-sm relative">
             <div class="absolute top-3 right-3 text-gray-300">
               <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
@@ -37,7 +37,7 @@
             <p class="text-sm text-gray-500 mb-1">読了</p>
             <p class="text-2xl font-bold text-gray-900">{{ booksStore.stats.finishedCount }}</p>
           </div>
-          <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm relative">
+          <div class="bg-white rounded-xl border border-[#2ECC71]/40 p-4 shadow-sm relative">
             <div class="absolute top-3 right-3 text-gray-300">
               <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
@@ -52,7 +52,7 @@
         <!-- タブ・ソート・表示切り替え -->
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <!-- ステータスタブ -->
-          <div class="flex border-b border-gray-200">
+          <div class="flex border-b border-[#2ECC71]/40">
             <button
               v-for="tab in statusTabs"
               :key="tab.value"
@@ -126,7 +126,7 @@
           <div class="text-gray-500">読み込み中...</div>
         </div>
 
-        <div v-else-if="filteredBooks.length === 0" class="text-center py-12 bg-white rounded-xl border border-gray-200">
+        <div v-else-if="filteredBooks.length === 0" class="text-center py-12 bg-white rounded-xl border border-[#2ECC71]/40">
           <div class="text-gray-500">書籍が登録されていません</div>
           <router-link
             to="/books/new"
@@ -136,12 +136,12 @@
           </router-link>
         </div>
 
-        <div v-else :class="viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'">
+        <div v-else :class="viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 xl:gap-5' : 'space-y-4'">
           <div
             v-for="book in filteredBooks"
             :key="book._id"
             :class="[
-              'bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow',
+              'bg-white rounded-xl border border-[#2ECC71]/40 overflow-hidden shadow-sm hover:shadow-md transition-shadow',
               viewMode === 'grid' ? '' : 'flex'
             ]"
           >
@@ -187,7 +187,7 @@
               </div>
             </div>
             <!-- アクションボタン（カードフッター） -->
-            <div class="flex items-center gap-2 p-4 border-t border-gray-100">
+            <div class="flex items-center gap-2 p-4 border-t border-[#2ECC71]/40">
               <router-link
                 :to="`/books/${book._id}/edit`"
                 class="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg text-sm font-medium bg-gray-50 border border-[#34C759]/70 text-[#2db34d] hover:bg-green-50 hover:border-[#34C759]"
@@ -239,8 +239,8 @@
     </div>
 
     <!-- フッター -->
-    <footer class="mt-auto bg-white">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <footer class="mt-auto bg-white border-t border-[#2ECC71]/40">
+      <div class="w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-10">
         <!-- メインコンテンツ -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
           <!-- 左: ブランド・説明 -->
