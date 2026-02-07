@@ -109,6 +109,13 @@
   - リスト形式で表示
   - 各本の基本情報（タイトル、著者、状態、進捗）を表示
   - ページネーション対応（任意）
+- **バックエンド追加要件**（書籍一覧画面デザイン対応）:
+  - **統計API** `GET /api/books/stats`: 読書統計を返すエンドポイント
+    - レスポンス例: `{ totalBooks, readingCount, wantCount, finishedCount, totalPagesRead, averageProgress }`
+    - 総冊数、読書中/読みたい(未読)/読了の件数、総読書ページ数、平均進捗率を集計して返す
+  - **書籍一覧API** `GET /api/books` のクエリパラメータ拡張:
+    - `sortBy`: ソート項目（`createdAt` / `updatedAt` / `title` など）
+    - `sortOrder`: ソート順（`asc` / `desc`）
 
 ### 2.8 検索・フィルタ機能
 - **機能説明**: 登録した本を検索・絞り込む

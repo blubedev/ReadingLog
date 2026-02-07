@@ -6,7 +6,7 @@
           <!-- ドロワー開閉ボタン（左端） -->
           <button
             type="button"
-            class="p-2 rounded-md text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            class="p-2 rounded-md text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#34C759]"
             aria-label="メニューを開く"
             @click="drawerOpen = true"
           >
@@ -15,7 +15,7 @@
             </svg>
           </button>
           <div class="flex-shrink-0 flex items-center ml-2">
-            <router-link to="/" class="text-xl font-bold text-indigo-600">
+            <router-link to="/" class="text-xl font-bold text-[#34C759]">
               ReadTracker
             </router-link>
           </div>
@@ -23,14 +23,14 @@
             <router-link
               to="/books"
               class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-              active-class="border-indigo-500 text-gray-900"
+              active-class="border-[#34C759] text-gray-900"
             >
               書籍一覧
             </router-link>
             <router-link
               to="/books/new"
               class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-              active-class="border-indigo-500 text-gray-900"
+              active-class="border-[#34C759] text-gray-900"
             >
               書籍登録
             </router-link>
@@ -40,7 +40,7 @@
           <span v-if="authStore.user" class="text-gray-700 mr-4">{{ authStore.user.username }}</span>
           <button
             @click="handleLogout"
-            class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+            class="bg-[#34C759] hover:bg-[#2db34d] text-white px-4 py-2 rounded-md text-sm font-medium"
           >
             ログアウト
           </button>
@@ -66,7 +66,7 @@
         aria-label="メニュー"
       >
         <div class="flex items-center justify-between h-16 px-4 border-b border-gray-200">
-          <span class="text-lg font-bold text-indigo-600">メニュー</span>
+          <span class="text-lg font-bold text-[#34C759]">メニュー</span>
           <button
             type="button"
             class="p-2 rounded-md text-gray-600 hover:bg-gray-100"
@@ -82,7 +82,7 @@
           <router-link
             to="/"
             class="flex items-center px-4 py-3 rounded-md text-gray-700 hover:bg-gray-100"
-            active-class="bg-indigo-50 text-indigo-700"
+              active-class="bg-green-50 text-[#34C759]"
             @click="drawerOpen = false"
           >
             ホーム
@@ -90,7 +90,7 @@
           <router-link
             to="/books"
             class="flex items-center px-4 py-3 rounded-md text-gray-700 hover:bg-gray-100"
-            active-class="bg-indigo-50 text-indigo-700"
+              active-class="bg-green-50 text-[#34C759]"
             @click="drawerOpen = false"
           >
             書籍一覧
@@ -98,7 +98,7 @@
           <router-link
             to="/books/new"
             class="flex items-center px-4 py-3 rounded-md text-gray-700 hover:bg-gray-100"
-            active-class="bg-indigo-50 text-indigo-700"
+              active-class="bg-green-50 text-[#34C759]"
             @click="drawerOpen = false"
           >
             書籍登録
