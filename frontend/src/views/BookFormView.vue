@@ -245,6 +245,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useBooksStore } from '@/stores/books';
+import { booksApi } from '@/api/books';
 import Navbar from '@/components/Navbar.vue';
 import BarcodeScanner from '@/components/BarcodeScanner.vue';
 
@@ -294,6 +295,10 @@ const handleSearch = async () => {
   if (!searchQuery.value.trim()) return;
   try {
     await booksStore.searchBooks(searchQuery.value);
+    // ISBN検索で結果が1件の場合は自動でフォームに入力
+    if (booksStore.searchResults.length === 1) {
+      selectBook(booksStore.searchResults[0]);
+    }
   } catch (error) {
     // エラーはストアで処理される
   }
@@ -302,15 +307,29 @@ const handleSearch = async () => {
 const handleBarcodeScanned = async (isbn) => {
   // スキャン成功時は常にISBNフィールドに自動入力
   form.value.isbn = isbn;
+  booksStore.error = null;
 
   try {
-    await booksStore.searchBooks(isbn);
-    // 検索結果があれば、タイトル・著者・ページ数などをフォームに自動入力
-    if (booksStore.searchResults.length > 0) {
-      selectBook(booksStore.searchResults[0]);
-    }
+    const { book } = await booksApi.lookupByIsbn(isbn);
+    // Open Library APIから取得した書籍情報でフォームを更新
+    form.value = {
+      title: book.title || '',
+      author: book.author || '',
+      isbn: book.isbn || isbn,
+      publisher: book.publisher || '',
+      publishDate: book.publishDate || '',
+      totalPages: book.totalPages ?? null,
+      currentPage: 0,
+      status: '未読',
+      rating: null,
+      coverImageUrl: book.coverImageUrl || '',
+      description: book.description || '',
+    };
   } catch (error) {
-    // エラーはストアで処理される（ISBNは既に入力済み）
+    // 書籍が見つからない場合はISBNのみ入力済みのまま、エラーはストアで表示
+    booksStore.error = error.response?.status === 404
+      ? 'このISBNの書籍情報が見つかりませんでした。手動で入力してください。'
+      : (error.response?.data?.message || '書籍情報の取得に失敗しました');
   }
 };
 

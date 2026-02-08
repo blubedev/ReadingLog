@@ -9,6 +9,13 @@ export const booksApi = {
     return response.data;
   },
 
+  // ISBNで書籍情報を取得（Open Library API、バーコード読み取り用）
+  lookupByIsbn: async (isbn) => {
+    const cleanIsbn = String(isbn).replace(/[-\s]/g, '');
+    const response = await client.get(`/books/lookup-by-isbn/${cleanIsbn}`);
+    return response.data;
+  },
+
   // 書籍一覧取得
   getBooks: async (params = {}) => {
     const response = await client.get('/books', { params });
