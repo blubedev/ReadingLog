@@ -10,6 +10,20 @@
         <!-- 書籍検索セクション -->
         <div v-if="!isEdit" class="bg-white shadow rounded-lg p-6 mb-6">
           <h2 class="text-xl font-semibold text-gray-900 mb-4">書籍を検索</h2>
+
+          <!-- バーコードスキャン -->
+          <div class="mb-4">
+            <BarcodeScanner
+              @barcode-scanned="handleBarcodeScanned"
+              @switch-to-manual="handleSwitchToManual"
+            />
+          </div>
+
+          <div class="flex items-center gap-4 my-4">
+            <span class="text-sm text-gray-500">または</span>
+            <div class="flex-1 h-px bg-gray-200"></div>
+          </div>
+
           <div class="flex gap-2">
             <input
               v-model="searchQuery"
@@ -232,6 +246,7 @@ import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useBooksStore } from '@/stores/books';
 import Navbar from '@/components/Navbar.vue';
+import BarcodeScanner from '@/components/BarcodeScanner.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -282,6 +297,26 @@ const handleSearch = async () => {
   } catch (error) {
     // エラーはストアで処理される
   }
+};
+
+const handleBarcodeScanned = async (isbn) => {
+  // スキャン成功時は常にISBNフィールドに自動入力
+  form.value.isbn = isbn;
+
+  try {
+    await booksStore.searchBooks(isbn);
+    // 検索結果があれば、タイトル・著者・ページ数などをフォームに自動入力
+    if (booksStore.searchResults.length > 0) {
+      selectBook(booksStore.searchResults[0]);
+    }
+  } catch (error) {
+    // エラーはストアで処理される（ISBNは既に入力済み）
+  }
+};
+
+const handleSwitchToManual = () => {
+  // スキャナーが閉じられ、手動入力にフォーカス
+  searchQuery.value = '';
 };
 
 const selectBook = (book) => {
