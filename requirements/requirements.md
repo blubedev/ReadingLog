@@ -36,8 +36,11 @@
   - 説明文（任意）
 - **自動記録項目**:
   - 登録日時
-- **使用する外部API**: **Open Library API**
-  - タイトルまたはISBNを入力すると、Open Library APIから書籍情報を自動取得
+- **使用する外部API**:
+  - **タイトル検索時**: Open Library API から書籍情報を自動取得
+  - **ISBN検索時**（バーコード読み取り・ISBN手動入力）: 以下の順で検索
+    1. **openBD API** で検索（日本の書籍情報に強い）
+    2. 1で検索結果がなければ **Open Library API** で検索
   - 詳細なAPI選定理由や検討内容は `consideration/book-api-selection.md` を参照
 - **バーコード読み取り機能**:
   - カメラアクセスの許可をユーザーに要求
@@ -222,9 +225,11 @@
   - 詳細な選定理由や検討内容は `consideration/ocr-library-selection.md` を参照
 
 ### 4.3 外部API
-- **書籍情報取得API**: **Open Library API**（決定）
-  - 書籍登録機能（2.1）で使用
-  - タイトルまたはISBNから書籍情報を自動取得
+- **書籍情報取得API**（決定）
+  - **ISBN検索時**（書籍登録機能 2.1）:
+    1. **openBD API**（優先）: 日本の書籍情報を取得。ISBNで検索し、結果が得られない場合のみ次へ
+    2. **Open Library API**（フォールバック）: openBDで見つからない場合に検索
+  - **タイトル検索時**: **Open Library API** から書籍情報を自動取得
   - 詳細なAPI選定理由や検討内容は `consideration/book-api-selection.md` を参照
 
 ### 4.4 テスト・CI/CD
@@ -276,7 +281,7 @@ API設計の詳細は [API設計書](./api-design.md) を参照してくださ�
   - JWT認証の実装
   - 認証ミドルウェアの実装
 - 本の登録機能（2.1）
-  - 外部API（Open Library API）との連携
+  - 外部APIとの連携（ISBN検索: openBD API → Open Library API、タイトル検索: Open Library API）
   - 書籍情報の自動取得機能
   - バーコード読み取り機能（カメラでISBNを読み取る）
 - 一覧表示機能（2.7）
@@ -341,8 +346,8 @@ API設計の詳細は [API設計書](./api-design.md) を参照してくださ�
 - ✅ **UIフレームワーク**: Tailwind CSS
 - ✅ **バーコード読み取り**: html5-qrcode
   - 詳細な選定理由や検討内容は `consideration/barcode-library-selection.md` を参照
-- ✅ **外部API**: Open Library API（書籍情報取得）
-  - 書籍登録機能で使用
+- ✅ **外部API**: openBD API（ISBN検索・優先）、Open Library API（ISBN検索・フォールバック／タイトル検索）
+  - 書籍登録機能で使用。ISBN検索は openBD → Open Library の順で検索
   - 詳細な選定理由や検討内容は `book-api-selection.md` を参照
 - ✅ **インフラ**: Vercel
   - **選定理由**: 費用と工数の関係から、Vercelを採用
@@ -385,8 +390,8 @@ API設計の詳細は [API設計書](./api-design.md) を参照してくださ�
 - ✅ **Vue.jsの状態管理ライブラリ: Pinia**（決定）
 - ✅ **UIフレームワーク: Tailwind CSS**（決定）
 - ✅ **MongoDB接続ライブラリ: Mongoose**（決定）
-- ✅ **書籍情報取得API: Open Library API**（決定）
-  - 書籍登録機能（2.1）で使用
+- ✅ **書籍情報取得API: openBD API（優先）、Open Library API（フォールバック／タイトル検索）**（決定）
+  - 書籍登録機能（2.1）で使用。ISBN検索は 1. openBD API で検索、2. 結果がなければ Open Library API で検索
   - 詳細な選定理由や検討内容は `book-api-selection.md` を参照
 - **追加機能に関連する検討事項**: `future-features.md` を参照
 
