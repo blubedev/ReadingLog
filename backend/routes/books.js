@@ -9,7 +9,7 @@ const { SUCCESS_MESSAGES, ERROR_TYPES, VALIDATION_MESSAGES, ERROR_MESSAGES, VALI
 router.use(auth);
 
 /**
- * Open Library API 用 fetch（タイムアウト45秒、リトライ2回）
+ * 汎用 fetch（タイムアウト45秒、リトライ2回）
  */
 async function fetchWithTimeout(url, options = {}) {
   const timeoutMs = options.timeout ?? 45000;
@@ -28,6 +28,9 @@ async function fetchWithTimeout(url, options = {}) {
   }
 }
 
+/**
+ * Open Library API 向けのJSON取得（リトライ付き）
+ */
 async function fetchOpenLibrary(url, retries = 2) {
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
@@ -41,6 +44,114 @@ async function fetchOpenLibrary(url, retries = 2) {
       }
     }
   }
+}
+
+/**
+ * openBD API からISBNで書籍情報を取得
+ * 参考: https://openbd.jp/
+ */
+async function fetchOpenBD(isbn, retries = 2) {
+  const url = `https://api.openbd.jp/v1/get?isbn=${isbn}`;
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const response = await fetchWithTimeout(url);
+      return await response.json();
+    } catch (err) {
+      if (attempt < retries) {
+        console.log(`[openBD] リトライ (${attempt + 1}/${retries}):`, err.message);
+      } else {
+        throw err;
+      }
+    }
+  }
+}
+
+/**
+ * openBD のレスポンスを内部用の書籍オブジェクトに変換
+ */
+function convertOpenBDToBook(openbdData, isbn) {
+  if (!Array.isArray(openbdData) || !openbdData[0]) {
+    return null;
+  }
+
+  const raw = openbdData[0];
+  const summary = raw.summary || {};
+  const onix = raw.onix || {};
+  const descriptive = onix.DescriptiveDetail || {};
+  const titleDetail = descriptive.TitleDetail || {};
+
+  const titleElement = Array.isArray(titleDetail.TitleElement)
+    ? titleDetail.TitleElement[0]
+    : titleDetail.TitleElement || {};
+
+  const titleText = titleElement.TitleText || {};
+
+  const title =
+    titleText.content ||
+    summary.title ||
+    '';
+
+  // 著者
+  const contributors = descriptive.Contributor || [];
+  const authors = Array.isArray(contributors)
+    ? contributors
+        .map((c) => c?.PersonName?.content)
+        .filter((name) => typeof name === 'string' && name.trim().length > 0)
+    : [];
+
+  const author =
+    (authors.length > 0 ? authors.join(', ') : summary.author) || '';
+
+  // 出版社
+  const publisher =
+    summary.publisher ||
+    onix.PublishingDetail?.Imprint?.ImprintName ||
+    '';
+
+  // 出版日（YYYYMMDD 形式などそのまま使用）
+  const publishDate =
+    summary.pubdate ||
+    (Array.isArray(onix.PublishingDetail?.PublishingDate)
+      ? onix.PublishingDetail.PublishingDate[0]?.Date
+      : onix.PublishingDetail?.PublishingDate?.Date) ||
+    '';
+
+  // 総ページ数
+  let totalPages = null;
+  const extent = descriptive.Extent;
+  if (Array.isArray(extent) && extent.length > 0) {
+    totalPages = Number(extent[0].ExtentValue) || null;
+  } else if (extent && extent.ExtentValue) {
+    totalPages = Number(extent.ExtentValue) || null;
+  } else if (summary.pagecount) {
+    totalPages = Number(summary.pagecount) || null;
+  }
+
+  // カバー画像
+  const coverImageUrl = summary.cover || '';
+
+  // 説明文（あれば）
+  let description = '';
+  const collateral = onix.CollateralDetail;
+  if (collateral?.TextContent) {
+    if (Array.isArray(collateral.TextContent) && collateral.TextContent.length > 0) {
+      description = collateral.TextContent[0]?.Text || '';
+    } else if (collateral.TextContent.Text) {
+      description = collateral.TextContent.Text;
+    }
+  }
+
+  return {
+    title,
+    author,
+    isbn,
+    publisher,
+    publishDate,
+    totalPages,
+    coverImageUrl,
+    description
+  };
 }
 
 /**
@@ -58,69 +169,83 @@ router.get('/search', async (req, res) => {
       });
     }
 
+    let books = [];
     // ISBNかタイトルかを判定
     const isISBN = /^[\d-]+$/.test(q.replace(/-/g, ''));
-    let searchUrl;
 
     if (isISBN) {
-      // ISBNで検索（ハイフンを除去）
+      // ISBN検索（まず openBD、見つからなければ Open Library）
       const isbn = q.replace(/-/g, '');
-      searchUrl = `https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&format=json&jscmd=data`;
-    } else {
-      // タイトルで検索
-      searchUrl = `https://openlibrary.org/search.json?title=${encodeURIComponent(q)}&limit=10`;
-    }
+      console.log('[search] リクエスト受信（ISBN） q:', q, 'isbn:', isbn);
 
-    console.log('[search] リクエスト受信 q:', q, 'isISBN:', isISBN, 'URL:', searchUrl);
+      // 1. openBDで検索
+      try {
+        const openbdRaw = await fetchOpenBD(isbn);
+        const openbdBook = convertOpenBDToBook(openbdRaw, isbn);
+        if (openbdBook) {
+          console.log('[search] openBD で書籍を取得');
+          books.push(openbdBook);
+        } else {
+          console.log('[search] openBD で書籍が見つかりませんでした');
+        }
+      } catch (err) {
+        console.log('[search] openBD 検索エラー（Open Library へフォールバック）:', err.message);
+      }
 
-    const data = await fetchOpenLibrary(searchUrl);
+      // 2. openBDで見つからなかった場合のみ Open Library を使用
+      if (books.length === 0) {
+        const searchUrl = `https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&format=json&jscmd=data`;
+        console.log('[search] Open Library books API を使用 URL:', searchUrl);
 
-    console.log('[search] Open Library レスポンス:', JSON.stringify(data).slice(0, 500));
+        const data = await fetchOpenLibrary(searchUrl);
+        console.log('[search] Open Library レスポンス:', JSON.stringify(data).slice(0, 500));
 
-    let books = [];
+        const key = `ISBN:${isbn}`;
+        let bookData = data[key];
 
-    if (isISBN) {
-      // ISBN検索の結果を処理
-      const isbn = q.replace(/-/g, '');
-      const key = `ISBN:${isbn}`;
-      let bookData = data[key];
+        // books APIで見つからない場合、search.json APIをフォールバック
+        if (!bookData) {
+          console.log('[search] books APIで未検出、search.jsonを試行');
+          const searchData = await fetchOpenLibrary(`https://openlibrary.org/search.json?isbn=${isbn}&limit=1`);
+          if (searchData.docs && searchData.docs.length > 0) {
+            const doc = searchData.docs[0];
+            bookData = {
+              title: doc.title,
+              authors: (doc.author_name || []).map((name) => ({ name })),
+              publishers: doc.publisher ? [{ name: doc.publisher[0] }] : [],
+              publish_date: doc.first_publish_year?.toString() || '',
+              number_of_pages: doc.number_of_pages_median || doc.number_of_pages?.[0] || null,
+              cover: doc.cover_i ? { medium: `https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg` } : {},
+              notes: ''
+            };
+          }
+        }
 
-      // books APIで見つからない場合、search.json APIをフォールバック
-      if (!bookData) {
-        console.log('[search] books APIで未検出、search.jsonを試行');
-        const searchData = await fetchOpenLibrary(`https://openlibrary.org/search.json?isbn=${isbn}&limit=1`);
-        if (searchData.docs && searchData.docs.length > 0) {
-          const doc = searchData.docs[0];
-          bookData = {
-            title: doc.title,
-            authors: (doc.author_name || []).map((name) => ({ name })),
-            publishers: doc.publisher ? [{ name: doc.publisher[0] }] : [],
-            publish_date: doc.first_publish_year?.toString() || '',
-            number_of_pages: doc.number_of_pages_median || doc.number_of_pages?.[0] || null,
-            cover: doc.cover_i ? { medium: `https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg` } : {},
-            notes: ''
-          };
+        if (bookData) {
+          books.push({
+            title: bookData.title,
+            author: bookData.authors?.map((a) => (typeof a === 'object' && a?.name ? a.name : String(a))).join(', ') || '',
+            isbn,
+            publisher: Array.isArray(bookData.publishers) && bookData.publishers[0]
+              ? (typeof bookData.publishers[0] === 'object' && bookData.publishers[0]?.name
+                ? bookData.publishers[0].name
+                : String(bookData.publishers[0]))
+              : '',
+            publishDate: bookData.publish_date || '',
+            totalPages: bookData.number_of_pages ?? null,
+            coverImageUrl: bookData.cover?.medium || bookData.cover?.small || '',
+            description: bookData.notes || ''
+          });
         }
       }
-
-      if (bookData) {
-        books.push({
-          title: bookData.title,
-          author: bookData.authors?.map((a) => (typeof a === 'object' && a?.name ? a.name : String(a))).join(', ') || '',
-          isbn,
-          publisher: Array.isArray(bookData.publishers) && bookData.publishers[0]
-            ? (typeof bookData.publishers[0] === 'object' && bookData.publishers[0]?.name
-              ? bookData.publishers[0].name
-              : String(bookData.publishers[0]))
-            : '',
-          publishDate: bookData.publish_date || '',
-          totalPages: bookData.number_of_pages ?? null,
-          coverImageUrl: bookData.cover?.medium || bookData.cover?.small || '',
-          description: bookData.notes || ''
-        });
-      }
     } else {
-      // タイトル検索の結果を処理
+      // タイトル検索（Open Library のみ）
+      const searchUrl = `https://openlibrary.org/search.json?title=${encodeURIComponent(q)}&limit=10`;
+      console.log('[search] リクエスト受信（タイトル） q:', q, 'URL:', searchUrl);
+
+      const data = await fetchOpenLibrary(searchUrl);
+      console.log('[search] Open Library レスポンス:', JSON.stringify(data).slice(0, 500));
+
       if (data.docs && data.docs.length > 0) {
         books = data.docs.slice(0, 10).map(doc => ({
           title: doc.title,
@@ -209,58 +334,80 @@ router.get('/lookup-by-isbn/:isbn', async (req, res) => {
       });
     }
 
-    const searchUrl = `https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&format=json&jscmd=data`;
-    console.log('[lookup-by-isbn] リクエスト受信 ISBN:', isbn, 'URL:', searchUrl);
+    console.log('[lookup-by-isbn] リクエスト受信 ISBN:', isbn);
 
-    const data = await fetchOpenLibrary(searchUrl);
+    // 1. openBD で検索
+    let book = null;
+    try {
+      const openbdRaw = await fetchOpenBD(isbn);
+      const openbdBook = convertOpenBDToBook(openbdRaw, isbn);
+      if (openbdBook) {
+        console.log('[lookup-by-isbn] openBD で書籍を取得');
+        book = openbdBook;
+      } else {
+        console.log('[lookup-by-isbn] openBD で書籍が見つかりませんでした');
+      }
+    } catch (err) {
+      console.log('[lookup-by-isbn] openBD 検索エラー（Open Library へフォールバック）:', err.message);
+    }
 
-    console.log('[lookup-by-isbn] Open Library レスポンス:', JSON.stringify(data).slice(0, 500));
+    // 2. openBD で見つからなかった場合のみ Open Library を使用
+    if (!book) {
+      const searchUrl = `https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&format=json&jscmd=data`;
+      console.log('[lookup-by-isbn] Open Library books API を使用 URL:', searchUrl);
 
-    const key = `ISBN:${isbn}`;
-    let bookData = data[key];
+      const data = await fetchOpenLibrary(searchUrl);
 
-    // books APIで見つからない場合、search.json APIをフォールバック
-    if (!bookData) {
-      console.log('[lookup-by-isbn] books APIで未検出、search.jsonを試行');
-      const searchData = await fetchOpenLibrary(`https://openlibrary.org/search.json?isbn=${isbn}&limit=1`);
-      if (searchData.docs && searchData.docs.length > 0) {
-        const doc = searchData.docs[0];
-        bookData = {
-          title: doc.title,
-          authors: (doc.author_name || []).map((name) => ({ name })),
-          publishers: doc.publisher ? [{ name: doc.publisher[0] }] : [],
-          publish_date: doc.first_publish_year?.toString() || '',
-          number_of_pages: doc.number_of_pages_median || doc.number_of_pages?.[0] || null,
-          cover: doc.cover_i ? { medium: `https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg` } : {},
-          notes: ''
+      console.log('[lookup-by-isbn] Open Library レスポンス:', JSON.stringify(data).slice(0, 500));
+
+      const key = `ISBN:${isbn}`;
+      let bookData = data[key];
+
+      // books APIで見つからない場合、search.json APIをフォールバック
+      if (!bookData) {
+        console.log('[lookup-by-isbn] books APIで未検出、search.jsonを試行');
+        const searchData = await fetchOpenLibrary(`https://openlibrary.org/search.json?isbn=${isbn}&limit=1`);
+        if (searchData.docs && searchData.docs.length > 0) {
+          const doc = searchData.docs[0];
+          bookData = {
+            title: doc.title,
+            authors: (doc.author_name || []).map((name) => ({ name })),
+            publishers: doc.publisher ? [{ name: doc.publisher[0] }] : [],
+            publish_date: doc.first_publish_year?.toString() || '',
+            number_of_pages: doc.number_of_pages_median || doc.number_of_pages?.[0] || null,
+            cover: doc.cover_i ? { medium: `https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg` } : {},
+            notes: ''
+          };
+        }
+      }
+
+      if (bookData) {
+        book = {
+          title: bookData.title || '',
+          author: Array.isArray(bookData.authors)
+            ? bookData.authors.map((a) => (typeof a === 'object' && a?.name ? a.name : String(a))).join(', ')
+            : '',
+          isbn,
+          publisher: Array.isArray(bookData.publishers) && bookData.publishers[0]
+            ? (typeof bookData.publishers[0] === 'object' && bookData.publishers[0]?.name
+              ? bookData.publishers[0].name
+              : String(bookData.publishers[0]))
+            : '',
+          publishDate: bookData.publish_date || '',
+          totalPages: bookData.number_of_pages ?? null,
+          coverImageUrl: bookData.cover?.medium || bookData.cover?.small || bookData.cover?.large || '',
+          description: bookData.notes || ''
         };
       }
     }
 
-    if (!bookData) {
-      console.log('[lookup-by-isbn] 書籍が見つかりません key:', key, 'レスポンスキー一覧:', Object.keys(data));
+    if (!book) {
+      console.log('[lookup-by-isbn] 書籍が見つかりません ISBN:', isbn);
       return res.status(404).json({
         error: ERROR_TYPES.NOT_FOUND,
         message: 'このISBNの書籍情報が見つかりませんでした'
       });
     }
-
-    const book = {
-      title: bookData.title || '',
-      author: Array.isArray(bookData.authors)
-        ? bookData.authors.map((a) => (typeof a === 'object' && a?.name ? a.name : String(a))).join(', ')
-        : '',
-      isbn,
-      publisher: Array.isArray(bookData.publishers) && bookData.publishers[0]
-        ? (typeof bookData.publishers[0] === 'object' && bookData.publishers[0]?.name
-          ? bookData.publishers[0].name
-          : String(bookData.publishers[0]))
-        : '',
-      publishDate: bookData.publish_date || '',
-      totalPages: bookData.number_of_pages ?? null,
-      coverImageUrl: bookData.cover?.medium || bookData.cover?.small || bookData.cover?.large || '',
-      description: bookData.notes || ''
-    };
 
     res.json({ book });
   } catch (error) {
