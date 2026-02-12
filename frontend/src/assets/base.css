@@ -23,9 +23,10 @@
 
 /* semantic color variables for this project */
 :root {
-  --color-background: var(--vt-c-white);
-  --color-background-soft: var(--vt-c-white-soft);
-  --color-background-mute: var(--vt-c-white-mute);
+  /* 全体の背景色を少し薄めのベージュ系に変更 */
+  --color-background: #fff3cf;
+  --color-background-soft: #ffe9b3;
+  --color-background-mute: #ffdea0;
 
   --color-border: var(--vt-c-divider-light-2);
   --color-border-hover: var(--vt-c-divider-light-1);
@@ -38,15 +39,17 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-background: var(--vt-c-black);
-    --color-background-soft: var(--vt-c-black-soft);
-    --color-background-mute: var(--vt-c-black-mute);
+    /* ダークモードでも同じベージュ系背景を使う */
+    --color-background: #fff3cf;
+    --color-background-soft: #ffe9b3;
+    --color-background-mute: #ffdea0;
 
     --color-border: var(--vt-c-divider-dark-2);
     --color-border-hover: var(--vt-c-divider-dark-1);
 
-    --color-heading: var(--vt-c-text-dark-1);
-    --color-text: var(--vt-c-text-dark-2);
+    /* テキスト色もライトテーマと同じ系統に統一 */
+    --color-heading: var(--vt-c-text-light-1);
+    --color-text: var(--vt-c-text-light-1);
   }
 }
 
