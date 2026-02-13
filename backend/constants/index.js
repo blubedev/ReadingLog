@@ -1,5 +1,5 @@
 // すべての定数をエクスポート
-const { SUCCESS_MESSAGES, ERROR_TYPES, VALIDATION_MESSAGES, ERROR_MESSAGES } = require('./messages');
+const { SUCCESS_MESSAGES, ERROR_TYPES, VALIDATION_MESSAGES, ERROR_MESSAGES, LOG_MESSAGES } = require('./messages');
 const { BOOK_STATUS, VALID_STATUSES, DEFAULT_STATUS } = require('./status');
 
 module.exports = {
@@ -7,6 +7,7 @@ module.exports = {
   ERROR_TYPES,
   VALIDATION_MESSAGES,
   ERROR_MESSAGES,
+  LOG_MESSAGES,
   BOOK_STATUS,
   VALID_STATUSES,
   DEFAULT_STATUS

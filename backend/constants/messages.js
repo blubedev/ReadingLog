@@ -98,9 +98,20 @@ const ERROR_MESSAGES = {
   NOTE_DETAIL_ERROR: 'メモの取得中にエラーが発生しました'
 };
 
+// ログ用メッセージ（認証関連）
+const LOG_MESSAGES = {
+  REGISTER_ERROR: 'ユーザー登録エラー:',
+  LOGIN_USER_NOT_FOUND: 'ログイン失敗: ユーザーが見つかりません（メールに該当するアカウントなし）',
+  LOGIN_PASSWORD_MISMATCH: 'ログイン失敗: パスワードが一致しません',
+  LOGIN_ERROR: 'ログインエラー:',
+  USER_INFO_ERROR: 'ユーザー情報取得エラー:',
+  TOKEN_REFRESH_ERROR: 'トークンリフレッシュエラー:'
+};
+
 module.exports = {
   SUCCESS_MESSAGES,
   ERROR_TYPES,
   VALIDATION_MESSAGES,
-  ERROR_MESSAGES
+  ERROR_MESSAGES,
+  LOG_MESSAGES
 };

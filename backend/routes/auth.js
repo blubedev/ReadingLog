@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
-const { SUCCESS_MESSAGES, ERROR_TYPES, VALIDATION_MESSAGES, ERROR_MESSAGES } = require('../constants');
+const { SUCCESS_MESSAGES, ERROR_TYPES, VALIDATION_MESSAGES, ERROR_MESSAGES, LOG_MESSAGES } = require('../constants');
 
 // 環境変数
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
@@ -92,7 +92,7 @@ router.post('/register', async (req, res) => {
       token
     });
   } catch (error) {
-    console.error('ユーザー登録エラー:', error);
+    console.error(LOG_MESSAGES.REGISTER_ERROR, error);
 
     // エラー内容をクライアントで確認できるように detail を返す
     return res.status(500).json({
@@ -127,7 +127,7 @@ router.post('/login', async (req, res) => {
     // ユーザーの検索
     const user = await User.findOne({ email });
     if (!user) {
-      console.error('ログイン失敗: ユーザーが見つかりません（メールに該当するアカウントなし）');
+      console.error(LOG_MESSAGES.LOGIN_USER_NOT_FOUND);
       return res.status(401).json({
         error: ERROR_TYPES.AUTH_ERROR,
         message: VALIDATION_MESSAGES.INVALID_CREDENTIALS
@@ -137,7 +137,7 @@ router.post('/login', async (req, res) => {
     // パスワードの検証
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
-      console.error('ログイン失敗: パスワードが一致しません');
+      console.error(LOG_MESSAGES.LOGIN_PASSWORD_MISMATCH);
       return res.status(401).json({
         error: ERROR_TYPES.AUTH_ERROR,
         message: VALIDATION_MESSAGES.INVALID_CREDENTIALS
@@ -161,7 +161,7 @@ router.post('/login', async (req, res) => {
       token
     });
   } catch (error) {
-    console.error('ログインエラー:', error);
+    console.error(LOG_MESSAGES.LOGIN_ERROR, error);
     res.status(500).json({
       error: ERROR_TYPES.SERVER_ERROR,
       message: ERROR_MESSAGES.LOGIN_ERROR
@@ -206,7 +206,7 @@ router.get('/me', auth, async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('ユーザー情報取得エラー:', error);
+    console.error(LOG_MESSAGES.USER_INFO_ERROR, error);
     res.status(500).json({
       error: ERROR_TYPES.SERVER_ERROR,
       message: ERROR_MESSAGES.USER_INFO_ERROR
@@ -241,7 +241,7 @@ router.post('/refresh', auth, async (req, res) => {
       token
     });
   } catch (error) {
-    console.error('トークンリフレッシュエラー:', error);
+    console.error(LOG_MESSAGES.TOKEN_REFRESH_ERROR, error);
     res.status(500).json({
       error: ERROR_TYPES.SERVER_ERROR,
       message: ERROR_MESSAGES.TOKEN_REFRESH_ERROR
