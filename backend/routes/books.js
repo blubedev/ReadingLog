@@ -286,9 +286,9 @@ router.get('/stats', async (req, res) => {
 
     const [totalBooks, readingCount, wantCount, finishedCount, books] = await Promise.all([
       Book.countDocuments({ userId }),
-      Book.countDocuments({ userId, status: '読書中' }),
-      Book.countDocuments({ userId, status: '未読' }),
-      Book.countDocuments({ userId, status: '読了' }),
+      Book.countDocuments({ userId, status: BOOK_STATUS.READING }),
+      Book.countDocuments({ userId, status: BOOK_STATUS.UNREAD }),
+      Book.countDocuments({ userId, status: BOOK_STATUS.COMPLETED }),
       Book.find({ userId }).select('currentPage totalPages')
     ]);
 
